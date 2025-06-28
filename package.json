@@ -1,0 +1,66 @@
+{
+  "name": "@fluttensor-ai/evogen",
+  "version": "0.0.1",
+  "description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
+  "private": false,
+  "keywords": [
+    "AI",
+    "gateway",
+    "vercel",
+    "ai-sdk"
+  ],
+  "author": "Fluttensor",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/evogen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/evogen/issues"
+  },
+  "homepage": "https://github.com/yourusername/evogen#readme",
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^2.0.1",
+    "@ai-sdk/anthropic": "^1.1.8",
+    "@ai-sdk/azure": "^1.3.7",
+    "@ai-sdk/cerebras": "^0.2.6",
+    "@ai-sdk/cohere": "^1.1.10",
+    "@ai-sdk/deepseek": "^0.1.10",
+    "@ai-sdk/google": "^1.1.14",
+    "@ai-sdk/mistral": "^1.1.11",
+    "@ai-sdk/openai": "^1.1.12",
+    "@ai-sdk/openai-compatible": "^0.2.6",
+    "@ai-sdk/replicate": "^0.2.4",
+    "@friendliai/ai-provider": "^0.2.4",
+    "@mastra/core": "0.9.4",
+    "@openrouter/ai-sdk-provider": "^0.2.1",
+    "ai": "^4.2.10",
+    "chalk": "^5.4.1",
+    "dotenv": "^16.4.5",
+    "ollama-ai-provider": "^1.2.0",
+    "superjson": "^2.2.1",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "axios": "^1.8.4",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "gen:models": "ts-node scripts/fetch-models.ts",
+    "test": "cross-env NODE_ENV=test vitest",
+    "build": "tsup"
+  }
+}
