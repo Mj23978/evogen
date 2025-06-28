@@ -1,6 +1,6 @@
 {
   "name": "@fluttensor-ai/evogen",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
   "private": false,
   "keywords": [
@@ -11,19 +11,25 @@
   ],
   "author": "Fluttensor",
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "gen:models": "ts-node scripts/fetch-models.ts",
+    "test": "cross-env NODE_ENV=test vitest",
+    "build": "tsup"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/evogen.git"
+    "url": "https://github.com/mj23978/evogen.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/evogen/issues"
+    "url": "https://github.com/mj23978/evogen/issues"
   },
-  "homepage": "https://github.com/yourusername/evogen#readme",
+  "homepage": "https://github.com/mj23978/evogen#readme",
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^2.0.1",
     "@ai-sdk/anthropic": "^1.1.8",
@@ -55,12 +61,5 @@
     "tsup": "^8.4.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
-  },
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "gen:models": "ts-node scripts/fetch-models.ts",
-    "test": "cross-env NODE_ENV=test vitest",
-    "build": "tsup"
   }
 }
