@@ -1,6 +1,6 @@
 {
   "name": "@fluttensor-ai/evogen",
-  "version": "0.0.4",
+  "version": "0.0.6-beta",
   "description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
   "private": false,
   "keywords": [
@@ -11,16 +11,33 @@
   ],
   "author": "Fluttensor",
   "license": "MIT",
-  "main": "dist/index.mjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist/**/*"
   ],
   "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "build": "pnpm clean && tsup --tsconfig tsconfig.build.json",
+    "build:watch": "pnpm clean && tsup --watch",
     "gen:models": "ts-node scripts/fetch-models.ts",
-    "test": "cross-env NODE_ENV=test vitest",
-    "build": "tsup"
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint \"./**/*.ts*\"",
+    "type-check": "tsc --build",
+    "prettier-check": "prettier --check \"./**/*.ts*\"",
+    "test": "vitest",
+    "test:update": "pnpm test:node -u",
+    "test:watch": "vitest --config vitest.node.config.js",
+    "test:edge": "vitest --config vitest.edge.config.js --run",
+    "test:node": "vitest --config vitest.node.config.js --run"
   },
   "repository": {
     "type": "git",
@@ -57,14 +74,11 @@
     "@ai-sdk/togetherai": "1.0.0-beta.2",
     "@ai-sdk/valibot": "1.0.0-beta.2",
     "@ai-sdk/xai": "2.0.0-beta.2",
-    "@friendliai/ai-provider": "^0.2.4",
-    "@openrouter/ai-sdk-provider": "^0.2.1",
     "ai": "5.0.0-beta.3",
     "chalk": "^5.4.1",
     "dotenv": "^16.4.5",
-    "ollama-ai-provider": "^1.2.0",
     "superjson": "^2.2.1",
-    "zod": "3.24.1"
+    "zod": "^3.25.49"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
@@ -75,5 +89,8 @@
     "tsup": "^8.4.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "zod": "^3.25.49"
   }
 }

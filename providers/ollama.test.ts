@@ -5,7 +5,7 @@ import { StaticEvogenStorage } from "../storage/static";
 import { OllamaProvider, parseOllamaConfig } from "./ollama";
 
 describe("OllamaProvider", () => {
-  const mockConfig = { baseUrl: "http://localhost:11434" };
+  const mockConfig = { baseURL: "http://localhost:11434" };
   const staticStorage = new StaticEvogenStorage();
   staticStorage.addProviderModels({
     modelInfos: [
@@ -89,12 +89,12 @@ describe("OllamaProvider", () => {
 
 describe("parseOllamaConfig", () => {
   it("should parse valid config", () => {
-    const config = parseOllamaConfig({ baseUrl: "http://localhost:11435" });
-    expect(config.baseUrl).toBe("http://localhost:11435");
+    const config = parseOllamaConfig({ baseURL: "http://localhost:11435" });
+    expect(config.baseURL).toBe("http://localhost:11435");
   });
 
   it("should parse valid config", () => {
     const config = parseOllamaConfig({});
-    expect(config.baseUrl).toBe("http://localhost:11434");
+    expect(config.baseURL).toBe("http://localhost:11434");
   });
 });

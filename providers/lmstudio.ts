@@ -42,7 +42,7 @@ export interface LMStudioApiResponse {
   models: LMStudioModel[];
 }
 interface LMStudioConfig {
-  baseUrl: string;
+  baseURL: string;
   isDocker?: boolean;
 }
 
@@ -58,13 +58,13 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   }
 
   getBaseUrl(metadata?: Record<string, any>): string {
-    let baseUrl = this.config.baseUrl;
+    let baseURL = this.config.baseURL;
     if (this.config.isDocker) {
-      baseUrl = baseUrl
+      baseURL = baseURL
         .replace("localhost", "host.docker.internal")
         .replace("127.0.0.1", "host.docker.internal");
     }
-    return baseUrl;
+    return baseURL;
   }
 
   async syncModelsFromServer(
@@ -165,10 +165,10 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
 }
 
 export function parseLMStudioConfig(config: Record<string, any>): LMStudioConfig {
-  const { baseUrl, isDocker } = config;
+  const { baseURL, isDocker } = config;
 
   return {
-    baseUrl: baseUrl ?? "http://localhost:1234",
+    baseURL: baseURL ?? "http://localhost:1234",
     isDocker,
   };
 }
