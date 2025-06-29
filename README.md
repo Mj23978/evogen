@@ -27,13 +27,13 @@ A TypeScript wrapper to seamlessly route multiple Vercel AI providers by model n
 To install the package, use npm or yarn:
 
 ```sh
-npm install evogen
+npm install @fluttensor-ai/evoge
 ```
 
 or
 
 ```sh
-yarn add evogen
+yarn add @fluttensor-ai/evoge
 ```
 
 ## Usage
