@@ -1,17 +1,44 @@
 import { ModelInfo, ProviderInfo } from "../core";
 
+import anthropicModels from "./models/anthropic"
+import bedrockModels from "./models/bedrock"
 import cohereModels from "./models/cohere"
+import deepseekModels from "./models/deepseek"
+import githubModels from "./models/github"
+import googleModels from "./models/google"
+import groqModels from "./models/groq"
+import huggingfaceModels from "./models/huggingface"
+import hyperbolicModels from "./models/hyperbolic"
+import mistralModels from "./models/mistral"
+import openaiModels from "./models/openai"
+import openrouterModels from "./models/openrouter"
+import perplexityModels from "./models/perplexity"
+import sambanovaModels from "./models/sambanova"
+import togetherModels from "./models/together"
+import xaiModels from "./models/xai"
 
 export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   {
-    name: "Ollama",
-    label: "Ollama",
-    type: "Ollama",
-    models: [],
+    name: "AmazonBedrock",
+    label: "AmazonBedrock",
+    type: "AmazonBedrock",
+    models: bedrockModels,
     keys: {
-      baseUrlEnv: "OLLAMA_API_BASE_URL",
-      healthLink: "$BASE_URL/api/tags",
-      getModelsLink: "$BASE_URL/api/tags",
+      apiKeyEnv: "AWS_SESSION_TOKEN",
+      healthLink: "https://health.aws.amazon.com/health/status",
+      getModelsLink: "https://bedrock.us-east-1.amazonaws.com/models",
+    },
+  },
+  {
+    name: "Anthropic",
+    label: "Anthropic Claude",
+    type: "Anthropic",
+    models: anthropicModels,
+    keys: {
+      apiKeyEnv: "ANTHROPIC_API_KEY",
+      baseUrlEnv: "ANTHROPIC_BASE_URL",
+      getApiKeyLink: "https://console.anthropic.com/settings/keys",
+      healthLink: "https://console.anthropic.com/settings/keys",
     },
   },
   {
@@ -25,128 +52,162 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
       getModelsLink: "https://api.cohere.ai/v1/models",
     },
   },
-  // AmazonBedrock: {
-  //   statusUrl: 'https://health.aws.amazon.com/health/status',
-  //   apiUrl: 'https://bedrock.us-east-1.amazonaws.com/models',
-  //   headers: {},
-  //   testModel: 'anthropic.claude-3-sonnet-20240229-v1:0',
-  // },
-  // Cohere: {
-  //   statusUrl: 'https://status.cohere.com/',
-  //   apiUrl: 'https://api.cohere.ai/v1/models',
-  //   headers: {},
-  //   testModel: 'command',
-  // },
-  // Deepseek: {
-  //   statusUrl: 'https://status.deepseek.com/',
-  //   apiUrl: 'https://api.deepseek.com/v1/models',
-  //   headers: {},
-  //   testModel: 'deepseek-chat',
-  // },
-  // Google: {
-  //   statusUrl: 'https://status.cloud.google.com/',
-  //   apiUrl: 'https://generativelanguage.googleapis.com/v1/models',
-  //   headers: {},
-  //   testModel: 'gemini-pro',
-  // },
-  // Groq: {
-  //   statusUrl: 'https://groqstatus.com/',
-  //   apiUrl: 'https://api.groq.com/v1/models',
-  //   headers: {},
-  //   testModel: 'mixtral-8x7b-32768',
-  // },
-  // HuggingFace: {
-  //   statusUrl: 'https://status.huggingface.co/',
-  //   apiUrl: 'https://api-inference.huggingface.co/models',
-  //   headers: {},
-  //   testModel: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-  // },
-  // Hyperbolic: {
-  //   statusUrl: 'https://status.hyperbolic.ai/',
-  //   apiUrl: 'https://api.hyperbolic.ai/v1/models',
-  //   headers: {},
-  //   testModel: 'hyperbolic-1',
-  // },
-  // Mistral: {
-  //   statusUrl: 'https://status.mistral.ai/',
-  //   apiUrl: 'https://api.mistral.ai/v1/models',
-  //   headers: {},
-  //   testModel: 'mistral-tiny',
-  // },
-  // OpenRouter: {
-  //   statusUrl: 'https://status.openrouter.ai/',
-  //   apiUrl: 'https://openrouter.ai/api/v1/models',
-  //   headers: {},
-  //   testModel: 'anthropic/claude-3-sonnet',
-  // },
-  // Perplexity: {
-  //   statusUrl: 'https://status.perplexity.com/',
-  //   apiUrl: 'https://api.perplexity.ai/v1/models',
-  //   headers: {},
-  //   testModel: 'pplx-7b-chat',
-  // },
-  // Together: {
-  //   statusUrl: 'https://status.together.ai/',
-  //   apiUrl: 'https://api.together.xyz/v1/models',
-  //   headers: {},
-  //   testModel: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-  // },
-  // XAI: {
-  //   statusUrl: 'https://status.x.ai/',
-  //   apiUrl: 'https://api.x.ai/v1/models',
-  //   headers: {},
-  //   testModel: 'grok-1',
-  // },
-  // {
-  //   name: 'OpenAI',
-  //   label: 'OpenAI',
-  //   type: 'OpenAI',
-  //   keys: {
-  //     apiKeyEnv: 'OPENAI_API_KEY',
-  //     baseUrlEnv: 'OPENAI_BASE_URL',
-  //     healthLink: 'https://openai.com/health',
-  //   },
-  // },
-  // {
-  //   name: 'AmazonBedrock',
-  //   label: 'Amazon Bedrock',
-  //   type: 'AmazonBedrock',
-  //   keys: {
-  //     apiKeyEnv: 'AWS_BEDROCK_CONFIG',
-  //     baseUrlEnv: 'AWS_BEDROCK_BASE_URL',
-  //     getApiKeyLink: 'https://console.aws.amazon.com/iam/home',
-  //     healthLink: 'https://aws.amazon.com/bedrock/',
-  //   },
-  // },
-  // {
-  //   name: 'Anthropic',
-  //   label: 'Anthropic Claude',
-  //   type: 'Anthropic',
-  //   keys: {
-  //     apiKeyEnv: 'ANTHROPIC_API_KEY',
-  //     baseUrlEnv: 'ANTHROPIC_BASE_URL',
-  //     getApiKeyLink: 'https://console.anthropic.com/settings/keys',
-  //     healthLink: 'https://console.anthropic.com/settings/keys',
-  //   },
-  // },
-  // {
-  //   name: 'Cohere',
-  //   label: 'Cohere',
-  //   type: 'Cohere',
-  //   keys: {
-  //     apiKeyEnv: 'COHERE_API_KEY',
-  //     baseUrlEnv: 'COHERE_BASE_URL',
-  //     getApiKeyLink: 'https://dashboard.cohere.com/api-keys',
-  //   }
-  // },
-  // {
-  //   name: "Deepseek",
-  //   label: "Deepseek",
-  //   type: "Deepseek",
-  //   keys: {
-  //     apiKeyEnv: "DEEPSEEK_API_KEY",
-  //     baseUrlEnv: "DEEPSEEK_BASE_URL",
-  //     getApiKeyLink: "https://platform.deepseek.com/apiKeys",
-  //   }
-  // },
+  {
+    name: "Deepseek",
+    label: "Deepseek",
+    type: "Deepseek",
+    models: deepseekModels,
+    keys: {
+      apiKeyEnv: "DEEPSEEK_API_KEY",
+      baseUrlEnv: "DEEPSEEK_BASE_URL",
+      getModelsLink: "https://platform.deepseek.com/apiKeys",
+    },
+  },
+  {
+    name: "Github",
+    label: "Github",
+    type: "Github",
+    models: githubModels,
+    keys: {
+      apiKeyEnv: "GITHUB_API_KEY",
+      baseUrlEnv: "GITHUB_BASE_URL",
+      getModelsLink: "https://models.inference.ai.azure.com",
+    },
+  },
+  {
+    name: "Google",
+    label: "Google",
+    type: "Google",
+    models: googleModels,
+    keys: {
+      apiKeyEnv: "GOOGLE_API_KEY",
+      baseUrlEnv: "GOOGLE_BASE_URL",
+      getModelsLink: "https://generativelanguage.googleapis.com/v1/models",
+    },
+  },
+  {
+    name: "Groq",
+    label: "Groq",
+    type: "Groq",
+    models: groqModels,
+    keys: {
+      apiKeyEnv: "GROQ_API_KEY",
+      baseUrlEnv: "GROQ_BASE_URL",
+      getModelsLink: "https://api.groq.com/v1/models",
+    },
+  },
+  {
+    name: "HuggingFace",
+    label: "HuggingFace",
+    type: "HuggingFace",
+    models: huggingfaceModels,
+    keys: {
+      apiKeyEnv: "HUGGINGFACE_API_KEY",
+      baseUrlEnv: "HUGGINGFACE_BASE_URL",
+      getModelsLink: "https://api.huggingface.com/v1/models",
+    },
+  },
+  {
+    name: "Hyperbolic",
+    label: "Hyperbolic",
+    type: "Hyperbolic",
+    models: hyperbolicModels,
+    keys: {
+      apiKeyEnv: "HYPERBOLIC_API_KEY",
+      baseUrlEnv: "HYPERBOLIC_BASE_URL",
+      getModelsLink: "https://api.huggingface.com/v1/models",
+    },
+  },
+  {
+    name: "LMStudio",
+    label: "LMStudio",
+    type: "LMStudio",
+    models: [],
+    keys: {
+      apiKeyEnv: "LMSTUDIO_API_KEY",
+      baseUrlEnv: "LMSTUDIO_BASE_URL",
+      getModelsLink: "$BASE_URL/v1/models",
+    },
+  },
+  {
+    name: "Mistral",
+    label: "Mistral",
+    type: "Mistral",
+    models: mistralModels,
+    keys: {
+      apiKeyEnv: "MISTRAL_API_KEY",
+      baseUrlEnv: "MISTRAL_BASE_URL",
+      getModelsLink: "https://api.mistral.ai/v1/models",
+    },
+  },
+  {
+    name: "Ollama",
+    label: "Ollama",
+    type: "Ollama",
+    models: [],
+    keys: {
+      baseUrlEnv: "OLLAMA_BASE_URL",
+      healthLink: "$BASE_URL/api/tags",
+      getModelsLink: "$BASE_URL/api/tags",
+    },
+  },
+  {
+    name: "OpenRouter",
+    label: "OpenRouter",
+    type: "OpenRouter",
+    models: openrouterModels,
+    keys: {
+      apiKeyEnv: "OPENROUTER_API_KEY",
+      baseUrlEnv: "OPENROUTER_BASE_URL",
+      healthLink: "https://status.openrouter.ai",
+      getModelsLink: "https://openrouter.ai/api/v1/models",
+    },
+  },
+  {
+    name: "OpenAI",
+    label: "OpenAI",
+    type: "OpenAI",
+    models: openaiModels,
+    keys: {
+      apiKeyEnv: "OPENAI_API_KEY",
+      baseUrlEnv: "OPENAI_BASE_URL",
+      healthLink: "https://openai.com/health",
+    },
+  },
+  {
+    name: "Perplexity",
+    label: "Perplexity",
+    type: "Perplexity",
+    models: perplexityModels,
+    keys: {
+      apiKeyEnv: "PERPLEXITY_API_KEY",
+      baseUrlEnv: "PERPLEXITY_BASE_URL",
+      healthLink: "https://status.perplexity.com/",
+      getModelsLink: "https://api.perplexity.ai/v1/models",
+    },
+  },
+  {
+    name: "Together",
+    label: "Together",
+    type: "Together",
+    models: togetherModels,
+    keys: {
+      apiKeyEnv: "TOGETHER_API_KEY",
+      baseUrlEnv: "TOGETHER_BASE_URL",
+      healthLink: "https://status.together.ai/",
+      getModelsLink: "https://api.together.xyz/v1/models",
+    },
+  },
+  {
+    name: "XAI",
+    label: "XAI",
+    type: "XAI",
+    models: xaiModels,
+    keys: {
+      apiKeyEnv: "XAI_API_KEY",
+      baseUrlEnv: "XAI_BASE_URL",
+      healthLink: "https://status.x.ai/",
+      getModelsLink: "https://api.x.ai/v1/models"
+    },
+  },
 ];

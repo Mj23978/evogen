@@ -1,6 +1,6 @@
 import { ModelInfo } from "../../core/types";
 
-export const HuggingFaceModels: ModelInfo[] = [
+const HuggingFaceModels: ModelInfo[] = [
   {
     "name": "Qwen/Qwen2.5-Coder-32B-Instruct",
     "label": "Qwen2.5-Coder-32B-Instruct (HuggingFace)",
@@ -104,3 +104,5 @@ export const HuggingFaceModels: ModelInfo[] = [
     "metadata": {}
   },
 ];
+
+export default HuggingFaceModels;

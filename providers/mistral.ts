@@ -48,7 +48,7 @@ type MistralApiResponse = {
 
 export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings> {
   type: ProviderType = "Mistral";
-  getModelsLink = "https://generativelanguage.mistralapis.com/v1/models";
+  getModelsLink = "https://api.mistral.ai/v1/models";
 
   createProvider(): ProviderV2 {
     return mistral;
@@ -65,13 +65,7 @@ export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings>
     const data = (await response.json()) as MistralApiResponse;
 
     const models = data.data.map<ModelInfo>((model: MistralModel) => {
-      const {
-        name,
-        capabilities,
-        id,
-        max_context_length,        
-        ...rest
-      } = model;
+      const { name, capabilities, id, max_context_length, ...rest } = model;
 
       let type: ModelsType = "chat";
       if (id.includes("moderation")) {

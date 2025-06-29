@@ -1,6 +1,6 @@
 import { ModelInfo } from "../../core/types";
 
-export const HyperbolicModels: ModelInfo[] = [
+const HyperbolicModels: ModelInfo[] = [
   {
     "name": "Qwen/Qwen2.5-Coder-32B-Instruct",
     "label": "Qwen2.5-Coder-32B-Instruct",
@@ -104,3 +104,5 @@ export const HyperbolicModels: ModelInfo[] = [
     "metadata": {}
   }
 ];
+
+export default HyperbolicModels;

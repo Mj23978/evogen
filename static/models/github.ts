@@ -1,6 +1,6 @@
 import { ModelInfo } from "../../core/types";
 
-export const GithubModels: ModelInfo[] = [
+const GithubModels: ModelInfo[] = [
   {
     "name": "gpt-4o",
     "label": "gpt 4o",
@@ -140,3 +140,5 @@ export const GithubModels: ModelInfo[] = [
     }
   },  
 ];
+
+export default GithubModels
