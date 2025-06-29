@@ -1,4 +1,4 @@
-import { AnthropicProviderSettings, createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
   EmbeddingModelV2,
   ImageModelV2,
@@ -16,27 +16,17 @@ import {
   StatusCheckResult,
 } from "../core";
 
-type AnthropicModel = {
+type OpenAICompatibleProviderSettings = {
   name: string;
-  endpoints: string[];
-  finetuned: boolean;
-  context_length: number;
-  tokenizer_url: string;
-  supports_vision: boolean;
-  features: null | string[];
-  default_endpoints: never[];
+  apiKey?: string;
+  baseURL: string;
 };
 
-type AnthropicApiResponse = {
-  models: AnthropicModel[];
-};
-
-export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSettings> {
-  type: ProviderType = "Anthropic";
-  getModelsLink = "https://api.anthropic.ai/v1/models";
+export class OpenAICompatibleProvider extends BaseEvogenProvider<OpenAICompatibleProviderSettings> {
+  type: ProviderType = "OpenAILike";
 
   createProvider(): ProviderV2 {
-    return createAnthropic(this.config);
+    return createOpenAICompatible(this.config);
   }
 
   async syncModelsFromServer(
@@ -52,70 +42,70 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<LanguageModelV2> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.languageModel(model.name);
-    return anthropicInstance;
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.languageModel(model.name);
+    return deepseekInstance;
   }
 
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<LanguageModelV2> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.languageModel(model.name);
-    return anthropicInstance;
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.languageModel(model.name);
+    return deepseekInstance;
   }
 
   async _imageModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<ImageModelV2> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.imageModel(model.name);
-    return anthropicInstance;
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.imageModel(model.name);
+    return deepseekInstance;
   }
 
   async _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<EmbeddingModelV2<string>> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.textEmbeddingModel(model.name);
-    return anthropicInstance;
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.textEmbeddingModel(model.name);
+    return deepseekInstance;
   }
 
   async _speachToTextModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<SpeechModelV2> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.speechModel?.(model.name);
-    if (!anthropicInstance) {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.speechModel?.(model.name);
+    if (!deepseekInstance) {
       throw new EvogenNotImplementedError(
-        "TTS models are not supported by Anthropic."
+        "TTS models are not supported by OpenAICompatible."
       );
     }
-    return anthropicInstance;
+    return deepseekInstance;
   }
 
   async _textToSpeachModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<TranscriptionModelV2> {
-    const anthropic = this.createProvider();
-    const anthropicInstance = anthropic.transcriptionModel?.(model.name);
-    if (!anthropicInstance) {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.transcriptionModel?.(model.name);
+    if (!deepseekInstance) {
       throw new EvogenNotImplementedError(
-        "TTS models are not supported by Anthropic."
+        "TTS models are not supported by OpenAICompatible."
       );
     }
-    return anthropicInstance;
+    return deepseekInstance;
   }
 
   async checkStatus(
     metadata?: Record<string, any>
   ): Promise<StatusCheckResult> {
-    const apiEndpoint = this.getModelsLink;
+    const apiEndpoint = this.config.baseURL;
     const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}`);
     const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
     return {
@@ -129,14 +119,15 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
   }
 }
 
-export function parseAnthropicConfig(
+export function parseOpenAICompatibleConfig(
   config: Record<string, any>
-): AnthropicProviderSettings {
-  if (!config || !config.apiKey) {
-    throw new Error("Missing credentials in Anthropic configuration.");
+): OpenAICompatibleProviderSettings {
+  if (!config || !config.apiKey || !config.baseURL) {
+    throw new Error("Missing credentials in OpenAICompatible configuration.");
   }
 
   return {
+    name: config.name || "OpenAI Compatible",
     apiKey: config.apiKey,
     baseURL: config.baseURL,
   };

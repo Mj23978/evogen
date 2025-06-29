@@ -2,7 +2,7 @@ export type FeatureActions = 'list' | 'get' | 'add' | 'edit' | 'delete';
 export type StorageFeature = 'apiKeys' | 'providers' | 'models';
 export type ProviderKeys = 'checkApiKeyLink' | 'getApiKeyLink' | 'apiKeyEnv' | 'baseUrlEnv' | 'healthLink' | 'getModelsLink';
 export type ProviderType = 'FriendliAI' | 'AssemblyAI' | 'Azure' | 'Cerebras' | 'Sambanova' | 'OpenAI' | 'Anthropic' | 'Google' | 'Mistral' | 'Cohere' | 'Deepseek' | 'Groq' | 'HuggingFace' | 'Hyperbolic' | 'Ollama' | 'OpenRouter' | 'OpenAILike' | 'Perplexity' | 'XAI' | 'Together' | 'LMStudio' | 'AmazonBedrock' | 'Github';
-export type ModelsType = 'chat' | 'completion' | 'image-generation' | 'text-to-speach' | 'moderation' | 'speech-to-text' | 'embedding' | 'rerank' | 'audio' | 'image-classification' | 'object-detection' | 'segmentation' | 'captioning';
+export type ModelsType = 'ocr' | 'chat' | 'completion' | 'image-generation' | 'text-to-speach' | 'moderation' | 'speech-to-text' | 'embedding' | 'rerank' | 'audio' | 'image-classification' | 'object-detection' | 'segmentation' | 'captioning';
 export type ModelsModality =  'reasoning' | 'function-call' | 'tool-choice' | 'prefill' | 'vision' | 'response-schema' | 'parallel-function-calling' | 'web-search' | 'image-generation' | 'audio-input' | 'audio-output' | 'pdf-input' | 'video-input' | 'image-embed';
 
 export type ModelCostPerMillion = {

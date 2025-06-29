@@ -1,94 +1,264 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import type { LanguageModelV1 } from 'ai';
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-import { BaseProvider } from '../base-provider';
-import type { ModelInfo, IProviderSetting } from '../types';
+import {
+  BaseEvogenProvider,
+  BaseEvogenStorage,
+  EvogenNotImplementedError,
+  EvogenProviderError,
+  ModelInfo,
+  ModelsModality,
+  ModelsType,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
+interface OllamaModelDetails {
+  parent_model: string;
+  format: string;
+  family: string;
+  families: string[];
+  parameter_size: string;
+  quantization_level: string;
+}
 
-export default class LMStudioProvider extends BaseProvider {
-  name = 'LMStudio';
-  getApiKeyLink = 'https://lmstudio.ai/';
-  labelForGetApiKey = 'Get LMStudio';
-  icon = 'i-ph:cloud-arrow-down';
+export interface OllamaModel {
+  name: string;
+  model: string;
+  modified_at: string;
+  size: number;
+  digest: string;
+  details: OllamaModelDetails;
+}
 
-  config = {
-    baseUrlKey: 'LMSTUDIO_API_BASE_URL',
-    baseUrl: 'http://localhost:1234/',
-  };
+export interface OllamaApiResponse {
+  models: OllamaModel[];
+}
 
-  staticModels: ModelInfo[] = [];
-
-  async getDynamicModels(
-    apiKeys?: Record<string, string>,
-    settings?: IProviderSetting,
-    serverEnv: Record<string, string> = {},
-  ): Promise<ModelInfo[]> {
-    let { baseUrl } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: settings,
-      serverEnv,
-      defaultBaseUrlKey: 'LMSTUDIO_API_BASE_URL',
-      defaultApiTokenKey: '',
-    });
-
-    if (!baseUrl) {
-      throw new Error('No baseUrl found for LMStudio provider');
-    }
-
-    if (typeof window === 'undefined') {
-      /*
-       * Running in Server
-       * Backend: Check if we're running in Docker
-       */
-      const isDocker = process?.env?.RUNNING_IN_DOCKER === 'true' || serverEnv?.RUNNING_IN_DOCKER === 'true';
-
-      baseUrl = isDocker ? baseUrl.replace('localhost', 'host.docker.internal') : baseUrl;
-      baseUrl = isDocker ? baseUrl.replace('127.0.0.1', 'host.docker.internal') : baseUrl;
-    }
-
-    const response = await fetch(`${baseUrl}/v1/models`);
-    const data = (await response.json()) as { data: Array<{ id: string }> };
-
-    return data.data.map((model) => ({
-      name: model.id,
-      label: model.id,
-      provider: this.name,
-      maxTokenAllowed: 8000,
-    }));
+const commonFamilyMaps: Record<
+  string,
+  {
+    context_length: number;
+    dimention?: number;
+    type: ModelsType;
+    modalities: ModelsModality[];
   }
-  getModelInstance: (options: {
-    model: string;
-    serverEnv?: Record<string, any>;
-    apiKeys?: Record<string, string>;
-    providerSettings?: Record<string, IProviderSetting>;
-  }) => LanguageModelV1 = (options) => {
-    const { apiKeys, providerSettings, serverEnv, model } = options;
-    let { baseUrl } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: providerSettings?.[this.name],
-      serverEnv: serverEnv as any,
-      defaultBaseUrlKey: 'LMSTUDIO_API_BASE_URL',
-      defaultApiTokenKey: '',
+> = {
+  gemma3: {
+    context_length: 131072,
+    type: "chat",
+    modalities: ["function-call", "vision", "response-schema", "tool-choice"],
+  },
+  qwen3: {
+    context_length: 40000,
+    type: "chat",
+    modalities: [
+      "function-call",
+      "response-schema",
+      "tool-choice",
+      "reasoning",
+    ],
+  },
+  gemma2: {
+    context_length: 8196,
+    type: "chat",
+    modalities: [],
+  },
+  gemma: {
+    context_length: 8196,
+    type: "chat",
+    modalities: [],
+  },
+  llama: {
+    context_length: 32768,
+    type: "chat",
+    modalities: ["function-call"],
+  },
+  qwen2: {
+    context_length: 32768,
+    type: "chat",
+    modalities: ["function-call", "response-schema", "tool-choice"],
+  },
+  "nomic-bert": {
+    context_length: 2048,
+    type: "embedding",
+    dimention: 768,
+    modalities: [],
+  },
+  deepseek2: {
+    context_length: 131072,
+    type: "chat",
+    modalities: ["function-call", "response-schema", "tool-choice"],
+  },
+  exaone: {
+    context_length: 32768,
+    type: "chat",
+    modalities: ["function-call", "response-schema", "tool-choice"],
+  },
+  phi3: {
+    context_length: 131072,
+    type: "chat",
+    modalities: [],
+  },
+  phi2: {
+    context_length: 4096,
+    type: "chat",
+    modalities: [],
+  },
+  bert: {
+    context_length: 512,
+    type: "embedding",
+    dimention: 1024,
+    modalities: [],
+  },
+  mllama: {
+    context_length: 131072,
+    type: "chat",
+    modalities: ["function-call", "vision"],
+  },
+  vision: {
+    context_length: 32768,
+    type: "chat",
+    modalities: ["function-call", "vision"],
+  },
+};
+const visionModelNames = ["llava", "moondream", "minicpm-v"];
+
+interface OllamaConfig {
+  baseUrl: string;
+  isDocker?: boolean;
+}
+
+export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
+  type: ProviderType = "Ollama";
+
+  createProvider(): ProviderV2 {
+    return createOpenAICompatible({
+      name: this.name,
+      apiKey: "",
+      baseURL: this.getBaseUrl(),
     });
+  }
 
-    if (!baseUrl) {
-      throw new Error('No baseUrl found for LMStudio provider');
+  getBaseUrl(metadata?: Record<string, any>): string {
+    let baseUrl = this.config.baseUrl;
+    if (this.config.isDocker) {
+      baseUrl = baseUrl
+        .replace("localhost", "host.docker.internal")
+        .replace("127.0.0.1", "host.docker.internal");
     }
+    return baseUrl;
+  }
 
-    const isDocker = process.env.RUNNING_IN_DOCKER === 'true' || serverEnv?.RUNNING_IN_DOCKER === 'true';
-
-    if (typeof window === 'undefined') {
-      baseUrl = isDocker ? baseUrl.replace('localhost', 'host.docker.internal') : baseUrl;
-      baseUrl = isDocker ? baseUrl.replace('127.0.0.1', 'host.docker.internal') : baseUrl;
-    }
-
-    console.debug('LMStudio Base Url used: ', baseUrl);
-
-    const lmstudio = createOpenAI({
-      baseURL: `${baseUrl}/v1`,
-      apiKey: '',
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
+    return await this.storage.getProviderModels({
+      providerName: this.name,
+      ...metadata,
     });
+  }
 
-    return lmstudio(model);
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.languageModel(
+      model.name
+    ) as LanguageModelV2 & { config: any };
+
+    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+
+    return ollamaInstance;
+  }
+
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.languageModel(
+      model.name
+    ) as LanguageModelV2 & { config: any };
+
+    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+
+    return ollamaInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by Ollama."
+    );
+  }
+
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.textEmbeddingModel(
+      model.name
+    ) as EmbeddingModelV2<string> & { config: any };
+
+    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+
+    return ollamaInstance;
+  }
+
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by Ollama."
+    );
+  }
+
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by Ollama."
+    );
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
+    const apiEndpoint = this.getBaseUrl();
+    const apiStatus = await this.checkEndpointStatus(
+      `${apiEndpoint}/api/models`
+    );
+    const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
+    return {
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
+      message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
+      incidents: [],
+    };
+  }
+}
+
+export function parseOllamaConfig(config: Record<string, any>): OllamaConfig {
+  const { baseUrl, isDocker } = config;
+
+  return {
+    baseUrl: baseUrl ?? "http://localhost:1234",
+    isDocker,
   };
 }

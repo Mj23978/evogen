@@ -1,95 +1,183 @@
-import type { LanguageModelV1 } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { groq, GroqProviderSettings } from "@ai-sdk/groq";
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
 
-import { BaseProvider } from '../base-provider';
-import type { ModelInfo, IProviderSetting } from '../types';
+import {
+  BaseEvogenProvider,
+  EvogenNotImplementedError,
+  ModelContext,
+  ModelInfo,
+  ModelsModality,
+  ModelsType,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
+type GroqModel = {
+  id: string;
+  object: string;
+  created: number;
+  owned_by: string;
+  active: boolean;
+  context_window: number;
+  public_apps: null;
+  max_completion_tokens: number;
+};
 
-export default class GroqProvider extends BaseProvider {
-  name = 'Groq';
-  getApiKeyLink = 'https://console.groq.com/keys';
+type GroqApiResponse = {
+  object: string;
+  data: GroqModel[];
+};
 
-  config = {
-    apiTokenKey: 'GROQ_API_KEY',
-  };
+export class GroqProvider extends BaseEvogenProvider<GroqProviderSettings> {
+  type: ProviderType = "Groq";
+  getModelsLink = "https://api.groq.com/v1/models";
 
-  staticModels: ModelInfo[] = [
-    { name: 'llama-3.1-8b-instant', label: 'Llama 3.1 8b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    { name: 'llama-3.2-11b-vision-preview', label: 'Llama 3.2 11b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    { name: 'llama-3.2-90b-vision-preview', label: 'Llama 3.2 90b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    { name: 'llama-3.2-3b-preview', label: 'Llama 3.2 3b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    { name: 'llama-3.2-1b-preview', label: 'Llama 3.2 1b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    { name: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70b (Groq)', provider: 'Groq', maxTokenAllowed: 8000 },
-    {
-      name: 'deepseek-r1-distill-llama-70b',
-      label: 'Deepseek R1 Distill Llama 70b (Groq)',
-      provider: 'Groq',
-      maxTokenAllowed: 131072,
-    },
-  ];
+  createProvider(): ProviderV2 {
+    return groq;
+  }
 
-  async getDynamicModels(
-    apiKeys?: Record<string, string>,
-    settings?: IProviderSetting,
-    serverEnv?: Record<string, string>,
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
   ): Promise<ModelInfo[]> {
-    const { apiKey } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: settings,
-      serverEnv: serverEnv as any,
-      defaultBaseUrlKey: '',
-      defaultApiTokenKey: 'GROQ_API_KEY',
-    });
-
-    if (!apiKey) {
-      throw `Missing Api Key configuration for ${this.name} provider`;
-    }
-
-    const response = await fetch(`https://api.groq.com/openai/v1/models`, {
+    const response = await fetch(this.getModelsLink, {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${this.config.apiKey!}`,
       },
     });
+    const data = (await response.json()) as GroqApiResponse;
 
-    const res = (await response.json()) as any;
+    const models = data.data.map<ModelInfo>((model: GroqModel) => {
+      const {
+        id,
+        active,
+        context_window,
+        max_completion_tokens,
+        ...rest
+      } = model;
 
-    const data = res.data.filter(
-      (model: any) => model.object === 'model' && model.active && model.context_window > 8000,
+      let type: ModelsType = "chat";
+      if (id.includes("whisper")) {
+        type = "speech-to-text";
+      }
+      if (id.includes("tts")) {
+        type = "text-to-speach";
+      }
+      if (id.includes("guard")) {
+        type = "moderation";
+      }
+
+      const modalities: ModelsModality[] = ["response-schema", "function-call"];
+
+      const context: ModelContext = {
+        maxOutputTokens: max_completion_tokens,
+        maxTokens: context_window,
+      };
+
+      return {
+        name: id,
+        label: id,
+        provider: "Groq" as const,
+        type,
+        modalities: modalities.length > 0 ? modalities : undefined,
+        context: Object.keys(context).length > 0 ? context : undefined,
+        cost: undefined, // not available in JSON
+      };
+    });
+    await this.storage.deleteProviderModels({
+      providerName: this.name,
+      ...metadata,
+    });
+    await this.storage.addProviderModels({
+      modelInfos: models,
+      providerName: this.name,
+      ...metadata,
+    });
+    return models;
+  }
+
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const groqInstance = groq.languageModel(model.name);
+    return groqInstance;
+  }
+
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const groqInstance = groq(model.name);
+    return groqInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by Groq."
     );
-
-    return data.map((m: any) => ({
-      name: m.id,
-      label: `${m.id} - context ${m.context_window ? Math.floor(m.context_window / 1000) + 'k' : 'N/A'} [ by ${m.owned_by}]`,
-      provider: this.name,
-      maxTokenAllowed: m.context_window || 8000,
-    }));
   }
 
-  getModelInstance(options: {
-    model: string;
-    serverEnv: Record<string, any>;
-    apiKeys?: Record<string, string>;
-    providerSettings?: Record<string, IProviderSetting>;
-  }): LanguageModelV1 {
-    const { model, serverEnv, apiKeys, providerSettings } = options;
-
-    const { apiKey } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: providerSettings?.[this.name],
-      serverEnv: serverEnv as any,
-      defaultBaseUrlKey: '',
-      defaultApiTokenKey: 'GROQ_API_KEY',
-    });
-
-    if (!apiKey) {
-      throw new Error(`Missing API key for ${this.name} provider`);
-    }
-
-    const openai = createOpenAI({
-      baseURL: 'https://api.groq.com/openai/v1',
-      apiKey,
-    });
-
-    return openai(model);
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const groqInstance = groq.textEmbeddingModel(model.name);
+    return groqInstance;
   }
+
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by Groq."
+    );
+  }
+
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by Groq."
+    );
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
+    const apiEndpoint = this.getModelsLink;
+    const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}`);
+    const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
+    return {
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
+      message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
+      incidents: [],
+    };
+  }
+}
+
+export function parseGroqConfig(
+  config: Record<string, any>
+): GroqProviderSettings {
+  if (!config || !config.apiKey) {
+    throw new Error("Missing API key in Groq configuration.");
+  }
+
+  return {
+    apiKey: config.apiKey,
+  };
 }

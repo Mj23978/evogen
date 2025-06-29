@@ -368,7 +368,7 @@ function readFromCache(cacheFile: string, maxAgeMs: number = 24 * 60 * 60 * 1000
   try {
     if (fs.existsSync(cacheFile)) {
       const stats = fs.statSync(cacheFile);
-      const fileAge = Date.now() - stats.mtimeMs;
+      const fileAge = Date.now() - stats.birthtimeMs;
 
       // Check if cache is still valid
       if (fileAge < maxAgeMs) {
@@ -535,11 +535,11 @@ async function downloadAndProcessModels(json: CloudConfig, cacheMaxAgeMs: number
 
 
 const urls: CloudConfig[] = [
-  {
-    url: "https://api.together.xyz/api/models2?&inf",
-    cacheFile: 'together_models',
-    type: 'together'
-  },
+  // {
+  //   url: "https://api.together.xyz/api/models2?&inf",
+  //   cacheFile: 'together_models',
+  //   type: 'together'
+  // },
   {
     url: 'https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/model_prices_and_context_window.json',
     cacheFile: 'litellm_models',

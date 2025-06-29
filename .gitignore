@@ -19,6 +19,7 @@ yarn-error.log*
 # Editor and IDE files
 .idea/
 .vscode/
+bruno/
 *.swp
 *.swo
 .DS_Store

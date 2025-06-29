@@ -1,54 +1,134 @@
-import type { LanguageModelV1 } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
 
-import { BaseProvider } from '../base-provider';
-import type { ModelInfo, IProviderSetting } from '../types';
+import {
+  BaseEvogenProvider,
+  EvogenNotImplementedError,
+  ModelInfo,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
+type GithubProviderSettings = {
+  name: string;
+  apiKey?: string;
+  baseURL: string;
+};
 
-export default class GithubProvider extends BaseProvider {
-  name = 'Github';
-  getApiKeyLink = 'https://github.com/settings/personal-access-tokens';
+export class GithubProvider extends BaseEvogenProvider<GithubProviderSettings> {
+  type: ProviderType = "OpenAILike";
 
-  config = {
-    apiTokenKey: 'GITHUB_API_KEY',
-  };
-
-  // find more in https://github.com/marketplace?type=models
-  staticModels: ModelInfo[] = [
-    { name: 'gpt-4o', label: 'GPT-4o', provider: 'Github', maxTokenAllowed: 8000 },
-    { name: 'o1', label: 'o1-preview', provider: 'Github', maxTokenAllowed: 100000 },
-    { name: 'o1-mini', label: 'o1-mini', provider: 'Github', maxTokenAllowed: 8000 },
-    { name: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'Github', maxTokenAllowed: 8000 },
-    { name: 'gpt-4-turbo', label: 'GPT-4 Turbo', provider: 'Github', maxTokenAllowed: 8000 },
-    { name: 'gpt-4', label: 'GPT-4', provider: 'Github', maxTokenAllowed: 8000 },
-    { name: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', provider: 'Github', maxTokenAllowed: 8000 },
-  ];
-
-  getModelInstance(options: {
-    model: string;
-    serverEnv: Record<string, any>;
-    apiKeys?: Record<string, string>;
-    providerSettings?: Record<string, IProviderSetting>;
-  }): LanguageModelV1 {
-    const { model, serverEnv, apiKeys, providerSettings } = options;
-
-    const { apiKey } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: providerSettings?.[this.name],
-      serverEnv: serverEnv as any,
-      defaultBaseUrlKey: '',
-      defaultApiTokenKey: 'GITHUB_API_KEY',
-    });
-
-    if (!apiKey) {
-      throw new Error(`Missing API key for ${this.name} provider`);
-    }
-
-    const openai = createOpenAI({
-      baseURL: 'https://models.inference.ai.azure.com',
-      apiKey,
-    });
-
-    return openai(model);
+  createProvider(): ProviderV2 {
+    return createOpenAICompatible(this.config);
   }
+
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
+    return await this.storage.getProviderModels({
+      providerName: this.name,
+      ...metadata,
+    });
+  }
+
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.languageModel(model.name);
+    return deepseekInstance;
+  }
+
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.languageModel(model.name);
+    return deepseekInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.imageModel(model.name);
+    return deepseekInstance;
+  }
+
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.textEmbeddingModel(model.name);
+    return deepseekInstance;
+  }
+
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.speechModel?.(model.name);
+    if (!deepseekInstance) {
+      throw new EvogenNotImplementedError(
+        "TTS models are not supported by Github."
+      );
+    }
+    return deepseekInstance;
+  }
+
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    const deepseek = this.createProvider();
+    const deepseekInstance = deepseek.transcriptionModel?.(model.name);
+    if (!deepseekInstance) {
+      throw new EvogenNotImplementedError(
+        "TTS models are not supported by Github."
+      );
+    }
+    return deepseekInstance;
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
+    const apiEndpoint = this.config.baseURL;
+    const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}`);
+    const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
+    return {
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
+      message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
+      incidents: [],
+    };
+  }
+}
+
+export function parseGithubConfig(
+  config: Record<string, any>
+): GithubProviderSettings {
+  if (!config || !config.apiKey) {
+    throw new Error("Missing credentials in Github configuration.");
+  }
+
+  return {
+    name: config.name || "Github",
+    apiKey: config.apiKey,
+    baseURL: config.baseURL || "https://models.inference.ai.azure.com",
+  };
 }

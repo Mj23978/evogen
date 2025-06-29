@@ -1,16 +1,28 @@
-import { ProviderInfo, ModelInfo } from "../core";
+import { ModelInfo, ProviderInfo } from "../core";
+
+import cohereModels from "./models/cohere"
 
 export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   {
-    name: 'Ollama',
-    label: 'Ollama',
-    type: 'Ollama',
+    name: "Ollama",
+    label: "Ollama",
+    type: "Ollama",
     models: [],
     keys: {
-      baseUrlEnv: 'OLLAMA_API_BASE_URL', 
-      healthLink: '$BASE_URL/api/tags',
-      getModelsLink: '$BASE_URL/api/tags',
-      getApiKeyLink: 'https://ollama.com/download',
+      baseUrlEnv: "OLLAMA_API_BASE_URL",
+      healthLink: "$BASE_URL/api/tags",
+      getModelsLink: "$BASE_URL/api/tags",
+    },
+  },
+  {
+    name: "Cohere",
+    label: "Cohere",
+    type: "Cohere",
+    models: cohereModels,
+    keys: {
+      apiKeyEnv: "COHERE_API_KEY",
+      healthLink: "https://status.cohere.com/",
+      getModelsLink: "https://api.cohere.ai/v1/models",
     },
   },
   // AmazonBedrock: {
@@ -90,9 +102,9 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   //   label: 'OpenAI',
   //   type: 'OpenAI',
   //   keys: {
-  //     apiKeyEnv: 'OPENAI_API_KEY',      
-  //     baseUrlEnv: 'OPENAI_BASE_URL', 
-  //     healthLink: 'https://openai.com/health', 
+  //     apiKeyEnv: 'OPENAI_API_KEY',
+  //     baseUrlEnv: 'OPENAI_BASE_URL',
+  //     healthLink: 'https://openai.com/health',
   //   },
   // },
   // {
@@ -100,10 +112,10 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   //   label: 'Amazon Bedrock',
   //   type: 'AmazonBedrock',
   //   keys: {
-  //     apiKeyEnv: 'AWS_BEDROCK_CONFIG',      
-  //     baseUrlEnv: 'AWS_BEDROCK_BASE_URL', 
-  //     getApiKeyLink: 'https://console.aws.amazon.com/iam/home', 
-  //     healthLink: 'https://aws.amazon.com/bedrock/', 
+  //     apiKeyEnv: 'AWS_BEDROCK_CONFIG',
+  //     baseUrlEnv: 'AWS_BEDROCK_BASE_URL',
+  //     getApiKeyLink: 'https://console.aws.amazon.com/iam/home',
+  //     healthLink: 'https://aws.amazon.com/bedrock/',
   //   },
   // },
   // {
@@ -112,9 +124,9 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   //   type: 'Anthropic',
   //   keys: {
   //     apiKeyEnv: 'ANTHROPIC_API_KEY',
-  //     baseUrlEnv: 'ANTHROPIC_BASE_URL', 
-  //     getApiKeyLink: 'https://console.anthropic.com/settings/keys', 
-  //     healthLink: 'https://console.anthropic.com/settings/keys', 
+  //     baseUrlEnv: 'ANTHROPIC_BASE_URL',
+  //     getApiKeyLink: 'https://console.anthropic.com/settings/keys',
+  //     healthLink: 'https://console.anthropic.com/settings/keys',
   //   },
   // },
   // {
@@ -123,8 +135,8 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   //   type: 'Cohere',
   //   keys: {
   //     apiKeyEnv: 'COHERE_API_KEY',
-  //     baseUrlEnv: 'COHERE_BASE_URL', 
-  //     getApiKeyLink: 'https://dashboard.cohere.com/api-keys', 
+  //     baseUrlEnv: 'COHERE_BASE_URL',
+  //     getApiKeyLink: 'https://dashboard.cohere.com/api-keys',
   //   }
   // },
   // {
@@ -133,9 +145,8 @@ export const staticProviders: (ProviderInfo & { models: ModelInfo[] })[] = [
   //   type: "Deepseek",
   //   keys: {
   //     apiKeyEnv: "DEEPSEEK_API_KEY",
-  //     baseUrlEnv: "DEEPSEEK_BASE_URL", 
-  //     getApiKeyLink: "https://platform.deepseek.com/apiKeys", 
+  //     baseUrlEnv: "DEEPSEEK_BASE_URL",
+  //     getApiKeyLink: "https://platform.deepseek.com/apiKeys",
   //   }
   // },
-
 ];

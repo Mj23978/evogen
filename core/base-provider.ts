@@ -1,8 +1,13 @@
-import type { MastraTTS } from '@mastra/core/tts';
-import type { MastraVoice } from '@mastra/core/voice';
-import type { EmbeddingModel, ImageModel, LanguageModelV1 } from 'ai';
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
 
-import { BaseEvogenStorage } from './base-storage';
+import { BaseEvogenStorage } from "./base-storage";
 import { ApiResponse, ModelInfo, ModelsType, StatusCheckResult } from "./types";
 
 export abstract class BaseEvogenProvider<T> {
@@ -16,59 +21,128 @@ export abstract class BaseEvogenProvider<T> {
     this.storage = storage;
   }
 
-  async validateModelExists(modelName: string, modelType: ModelsType, metadata?: Record<string, any>): Promise<ModelInfo> {
-    return await this.storage.getProviderModel({ modelName, providerName: this.name, type: modelType, ...metadata });
+  async validateModelExists(
+    modelName: string,
+    modelType: ModelsType,
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo> {
+    return await this.storage.getProviderModel({
+      modelName,
+      providerName: this.name,
+      type: modelType,
+      ...metadata,
+    });
   }
 
-  abstract _chatModel(model: ModelInfo, metadata?: Record<string, any>): Promise<LanguageModelV1>;
-  async chatModel(modelName: string, metadata?: Record<string, any>): Promise<LanguageModelV1> {
-    const model = await this.validateModelExists(modelName, "chat", metadata)
-    return this._chatModel(model, metadata)
+  abstract createProvider(): ProviderV2;
+
+  abstract _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2>;
+  async chatModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const model = await this.validateModelExists(modelName, "chat", metadata);
+    return this._chatModel(model, metadata);
   }
 
-  abstract _completionModel(model: ModelInfo, metadata?: Record<string, any>): Promise<LanguageModelV1>;
-  async completionModel(modelName: string, metadata?: Record<string, any>): Promise<LanguageModelV1> {
-    const model = await this.validateModelExists(modelName, "completion", metadata)
-    return this._completionModel(model, metadata)
+  abstract _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2>;
+  async completionModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const model = await this.validateModelExists(
+      modelName,
+      "completion",
+      metadata
+    );
+    return this._completionModel(model, metadata);
   }
 
-  abstract _imageModel(model: ModelInfo, metadata?: Record<string, any>): Promise<ImageModel>;
-  async imageModel(modelName: string, metadata?: Record<string, any>): Promise<ImageModel> {
-    const model = await this.validateModelExists(modelName, "image-generation", metadata)
-    return this._imageModel(model, metadata)
+  abstract _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2>;
+  async imageModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    const model = await this.validateModelExists(
+      modelName,
+      "image-generation",
+      metadata
+    );
+    return this._imageModel(model, metadata);
   }
 
-  abstract _embeddingModel(model: ModelInfo, metadata?: Record<string, any>): Promise<EmbeddingModel<any>>;
-  async embeddingModel(modelName: string, metadata?: Record<string, any>): Promise<EmbeddingModel<any>> {
-    const model = await this.validateModelExists(modelName, "embedding", metadata)
-    return this._embeddingModel(model, metadata)
+  abstract _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<any>>;
+  async embeddingModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<any>> {
+    const model = await this.validateModelExists(
+      modelName,
+      "embedding",
+      metadata
+    );
+    return this._embeddingModel(model, metadata);
   }
 
-  abstract _audioModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraVoice>;
-  async audioModel(modelName: string, metadata?: Record<string, any>): Promise<MastraVoice> {
-    const model = await this.validateModelExists(modelName, "audio", metadata)
-    return this._audioModel(model, metadata)
+  abstract _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2>;
+  async speachToTextModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    const model = await this.validateModelExists(
+      modelName,
+      "speech-to-text",
+      metadata
+    );
+    return this._speachToTextModel(model, metadata);
   }
 
-  abstract _speachToTextModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraVoice>;
-  async speachToTextModel(modelName: string, metadata?: Record<string, any>): Promise<MastraVoice> {
-    const model = await this.validateModelExists(modelName, "speech-to-text", metadata)
-    return this._speachToTextModel(model, metadata)
+  abstract _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2>;
+  async textToSpeachModel(
+    modelName: string,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    const model = await this.validateModelExists(
+      modelName,
+      "text-to-speach",
+      metadata
+    );
+    return this._textToSpeachModel(model, metadata);
   }
 
-  abstract _textToSpeachModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraTTS>;
-  async textToSpeachModel(modelName: string, metadata?: Record<string, any>): Promise<MastraTTS> {
-    const model = await this.validateModelExists(modelName, "text-to-speach", metadata)
-    return this._textToSpeachModel(model, metadata)
-  }
-
-  abstract syncModelsFromServer(metadata?: Record<string, any>): Promise<ModelInfo[]>;
+  abstract syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]>;
 
   protected async checkApiEndpoint(
     url: string,
     headers?: Record<string, string>,
     testModel?: string,
-    metadata?: Record<string, any>): Promise<{ ok: boolean; status: number | string; message?: string; responseTime: number }> {
+    metadata?: Record<string, any>
+  ): Promise<{
+    ok: boolean;
+    status: number | string;
+    message?: string;
+    responseTime: number;
+  }> {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -77,12 +151,12 @@ export abstract class BaseEvogenProvider<T> {
 
       // Add common headers
       const processedHeaders = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       };
 
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: processedHeaders,
         signal: controller.signal,
       });
@@ -115,11 +189,14 @@ export abstract class BaseEvogenProvider<T> {
       let models: string[] = [];
 
       if (Array.isArray(data)) {
-        models = data.map((model: { id?: string; name?: string }) => model.id || model.name || '');
+        models = data.map(
+          (model: { id?: string; name?: string }) =>
+            model.id || model.name || ""
+        );
       } else if (data.data && Array.isArray(data.data)) {
-        models = data.data.map((model) => model.id || model.name || '');
+        models = data.data.map((model) => model.id || model.name || "");
       } else if (data.models && Array.isArray(data.models)) {
-        models = data.models.map((model) => model.id || model.name || '');
+        models = data.models.map((model) => model.id || model.name || "");
       } else if (data.model) {
         models = [data.model];
       }
@@ -129,14 +206,14 @@ export abstract class BaseEvogenProvider<T> {
           ok: true,
           status: response.status,
           responseTime,
-          message: 'API key is valid',
+          message: "API key is valid",
         };
       }
 
       if (testModel && !models.includes(testModel)) {
         return {
           ok: true,
-          status: 'model_not_found',
+          status: "model_not_found",
           message: `API key is valid (test model ${testModel} not found in ${models.length} available models)`,
           responseTime,
         };
@@ -145,50 +222,63 @@ export abstract class BaseEvogenProvider<T> {
       return {
         ok: true,
         status: response.status,
-        message: 'API key is valid',
+        message: "API key is valid",
         responseTime,
       };
     } catch (error) {
       console.error(`Error checking API endpoint ${url}:`, error);
       return {
         ok: false,
-        status: error instanceof Error ? error.message : 'Unknown error',
-        message: error instanceof Error ? `Connection failed: ${error.message}` : 'Connection failed',
+        status: error instanceof Error ? error.message : "Unknown error",
+        message:
+          error instanceof Error
+            ? `Connection failed: ${error.message}`
+            : "Connection failed",
         responseTime: 0,
       };
     }
   }
 
-  protected async checkEndpoint(url: string, metadata?: Record<string, any>): Promise<'reachable' | 'unreachable'> {
+  protected async checkEndpoint(
+    url: string,
+    metadata?: Record<string, any>
+  ): Promise<"reachable" | "unreachable"> {
     try {
       const response = await fetch(url, {
-        mode: 'no-cors',
+        mode: "no-cors",
         headers: {
-          Accept: 'text/html',
+          Accept: "text/html",
         },
       });
-      return response.type === 'opaque' ? 'reachable' : 'unreachable';
+      return response.type === "opaque" ? "reachable" : "unreachable";
     } catch (error) {
       console.error(`Error checking ${url}:`, error);
-      return 'unreachable';
+      return "unreachable";
     }
   }
 
-  protected async checkEndpointStatus(url: string, metadata?: Record<string, any>): Promise<'reachable' | 'unreachable'> {
+  protected async checkEndpointStatus(
+    url: string,
+    metadata?: Record<string, any>
+  ): Promise<"reachable" | "unreachable"> {
     try {
       const response = await fetch(url, {
         headers: {
-          Accept: 'text/html',
+          Accept: "text/html",
         },
       });
-      return response.status >= 200 && response.status < 300 ? 'reachable' : 'unreachable';
+      return response.status >= 200 && response.status < 300
+        ? "reachable"
+        : "unreachable";
     } catch (error) {
       console.error(`Error checking ${url}:`, error);
-      return 'unreachable';
+      return "unreachable";
     }
   }
 
-  abstract checkStatus(metadata?: Record<string, any>): Promise<StatusCheckResult>;
+  abstract checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult>;
 }
 
 // export function getOpenAILikeModel(baseURL: string, apiKey: OptionalApiKey, model: string) {

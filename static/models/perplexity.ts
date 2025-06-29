@@ -1,5 +1,5 @@
 // Auto-generated model configuration
-// Generated on 2025-04-05T18:33:11.238Z
+// Generated on 2025-06-28T19:02:34.499Z
 
 import { ModelInfo } from '../../core/types';
 

@@ -1,78 +1,151 @@
-import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
-import type { LanguageModelV1, ImageModel, EmbeddingModel } from 'ai';
-import { MastraVoice } from '@mastra/core/voice';
-import { MastraTTS } from '@mastra/core/tts';
+import {
+  createAmazonBedrock,
+  AmazonBedrockProviderSettings,
+} from "@ai-sdk/amazon-bedrock";
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
 
-import { BaseEvogenProvider, ModelInfo, ProviderInfo, EvogenProviderError, EvogenNotImplementedError } from '../core';
+import {
+  BaseEvogenProvider,
+  EvogenNotImplementedError,
+  ModelInfo,
+  ModelsModality,
+  ModelsType,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
-interface AWSBedRockConfig {
-  region: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  sessionToken?: string;
+type AmazonBedrockModel = {
+  name: string;
+  endpoints: string[];
+  finetuned: boolean;
+  context_length: number;
+  tokenizer_url: string;
+  supports_vision: boolean;
+  features: null | string[];
+  default_endpoints: never[];
+};
+
+type AmazonBedrockApiResponse = {
+  models: AmazonBedrockModel[];
+};
+
+export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProviderSettings> {
+  type: ProviderType = "AmazonBedrock";
+  getModelsLink = "https://api.bedrock.ai/v1/models";
+
+  createProvider(): ProviderV2 {
+    return createAmazonBedrock(this.config);;
+  }
+
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
+    return await this.storage.getProviderModels({
+      providerName: this.name,
+      ...metadata,
+    });
+  }
+
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.languageModel(model.name);
+    return bedrockInstance;
+  }
+
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.languageModel(model.name);
+    return bedrockInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.imageModel(model.name);
+    return bedrockInstance;
+  }
+
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.textEmbeddingModel(model.name);
+    return bedrockInstance;
+  }
+
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.speechModel?.(model.name);
+    if (!bedrockInstance) {
+      throw new EvogenNotImplementedError(
+        "TTS models are not supported by AmazonBedrock."
+      );
+    }
+    return bedrockInstance;
+  }
+  
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    const bedrock = this.createProvider();
+    const bedrockInstance = bedrock.transcriptionModel?.(model.name);
+    if (!bedrockInstance) {
+      throw new EvogenNotImplementedError(
+        "TTS models are not supported by AmazonBedrock."
+      );
+    }
+    return bedrockInstance;
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
+    const apiEndpoint = this.getModelsLink;
+    const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}`);
+    const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
+    return {
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
+      message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
+      incidents: [],
+    };
+  }
 }
 
-export default class AmazonBedrockProvider extends BaseEvogenProvider<AWSBedRockConfig> {
-  name = 'AmazonBedrock';
-  getApiKeyLink = 'https://console.aws.amazon.com/iam/home';
-  apiKey: string;
-
-  constructor(config: AWSBedRockConfig, models: ModelInfo[], apiKey: string) {
-    super(config, models);
-    this.apiKey = apiKey
-  }
-
-  _chatModel(model: ModelInfo): LanguageModelV1 {
-    const bedrock = createAmazonBedrock(this.config);
-    return bedrock(model.name);
-  }
-
-  _completionModel(model: ModelInfo): LanguageModelV1 {
-    const bedrock = createAmazonBedrock(this.config);
-    return bedrock(model.name);
-  }
-
-  _imageModel(model: ModelInfo): ImageModel {
-    const bedrock = createAmazonBedrock(this.config);
-    return bedrock.imageModel(model.name);
-  }
-
-  _embeddingModel(model: ModelInfo): EmbeddingModel<string>  {
-    const bedrock = createAmazonBedrock(this.config);
-    return bedrock.textEmbeddingModel(model.name);
-  }
-
-  _audioModel(model: ModelInfo): MastraVoice {
-    throw new EvogenNotImplementedError('Audio models are not supported by Amazon Bedrock.');
-  }
-
-  _speachToTextModel(model: ModelInfo): MastraVoice {
-    throw new EvogenNotImplementedError('Speach models are not supported by Amazon Bedrock.');
-  }
-
-  _textToSpeachModel(model: ModelInfo): MastraTTS {
-    throw new EvogenNotImplementedError('TTS models are not supported by Amazon Bedrock.');
-  }
-
-  async getModelsFromServer(apiKey: ModelInfo): Promise<ModelInfo[]> {
-    return this.models
-  }
-}
-
-
-export function parseAmazonBedrockConfig(config: Record<string, any>): AWSBedRockConfig {
-  const { region, accessKeyId, secretAccessKey, sessionToken } = config;
-
-  if (!region || !accessKeyId || !secretAccessKey) {
-    throw new EvogenProviderError(
-      'Missing required AWS credentials. Configuration must include region, accessKeyId, and secretAccessKey.',
-    );
+export function parseAmazonBedrockConfig(
+  config: Record<string, any>
+): AmazonBedrockProviderSettings {
+  if (!config || !config.accessKeyId || !config.secretAccessKey || !config.region) {
+    throw new Error("Missing credentials in AmazonBedrock configuration.");
   }
 
   return {
-    region,
-    accessKeyId,
-    secretAccessKey,
-    ...(sessionToken && { sessionToken }),
+    sessionToken: config.sessionToken,
+    accessKeyId: config.accessKeyId,
+    region: config.region,
+    baseURL: config.baseURL,
+    secretAccessKey: config.secretAccessKey,
   };
 }

@@ -2,43 +2,39 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { EvogenNotImplementedError } from "../core";
 import { StaticEvogenStorage } from "../storage/static";
-import { OllamaProvider, parseOllamaConfig } from "./ollama";
+import { CohereProvider, parseCohereConfig } from "./cohere";
 
-describe("OllamaProvider", () => {
-  const mockConfig = { baseUrl: "http://localhost:11434" };
+describe("CohereProvider", () => {
+  const mockConfig = { apiKey: "1234567890" };
   const staticStorage = new StaticEvogenStorage();
   staticStorage.addProviderModels({
     modelInfos: [
-      { label: "", name: "test-model", provider: "Ollama", type: "audio" },
-      { label: "", name: "test-model", provider: "Ollama", type: "chat" },
-      { label: "", name: "test-model", provider: "Ollama", type: "embedding" },
+      { label: "", name: "test-model", provider: "Cohere", type: "audio" },
+      { label: "", name: "test-model", provider: "Cohere", type: "chat" },
+      { label: "", name: "test-model", provider: "Cohere", type: "embedding" },
       {
         label: "",
         name: "test-model",
-        provider: "Ollama",
+        provider: "Cohere",
         type: "speech-to-text",
       },
       {
         label: "",
         name: "test-model",
-        provider: "Ollama",
+        provider: "Cohere",
         type: "text-to-speach",
       },
     ],
-    providerName: "Ollama",
+    providerName: "Cohere",
   });
-  let provider: OllamaProvider;
+  let provider: CohereProvider;
 
   beforeEach(async () => {
-    provider = new OllamaProvider("ollama", mockConfig, staticStorage);
+    provider = new CohereProvider("cohere", mockConfig, staticStorage);
   });
 
   it("should initialize with correct config", () => {
-    expect(provider.name).toBe("Ollama");
-  });
-
-  it("should get base URL correctly", () => {
-    expect(provider.getBaseUrl()).toBe("http://localhost:11434");
+    expect(provider.name).toBe("Cohere");
   });
 
   it("should get models from server", async () => {
@@ -48,7 +44,7 @@ describe("OllamaProvider", () => {
           models: [
             {
               name: "test-model",
-              details: { family: "llama", parameter_size: "7B" },
+              details: { family: "cohere", parameter_size: "7B" },
             },
           ],
         }),
@@ -59,7 +55,7 @@ describe("OllamaProvider", () => {
 
     expect(models).toHaveLength(1);
     expect(models[0].name).toBe("test-model");
-    expect(models[0].provider).toBe("Ollama");
+    expect(models[0].provider).toBe("Cohere");
   });
 
   it("should throw error for unsupported speech-to-text model", async () => {
@@ -87,14 +83,14 @@ describe("OllamaProvider", () => {
   });
 });
 
-describe("parseOllamaConfig", () => {
+describe("parseCohereConfig", () => {
   it("should parse valid config", () => {
-    const config = parseOllamaConfig({ baseUrl: "http://localhost:11435" });
-    expect(config.baseUrl).toBe("http://localhost:11435");
+    const config = parseCohereConfig({ apiKey: "1234567890" });
+    expect(config.apiKey).toBe("1234567890");
   });
 
-  it("should parse valid config", () => {
-    const config = parseOllamaConfig({});
-    expect(config.baseUrl).toBe("http://localhost:11434");
+  it("should parse default config", () => {
+    const config = parseCohereConfig({});
+    expect(config.apiKey).toBe("");
   });
 });

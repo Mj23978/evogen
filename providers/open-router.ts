@@ -1,132 +1,235 @@
-import type { LanguageModelV1 } from 'ai';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
 
-import { BaseProvider } from '../base-provider';
-import type { ModelInfo, IProviderSetting } from '../types';
+import {
+  BaseEvogenProvider,
+  EvogenNotImplementedError,
+  ModelContext,
+  ModelCostPerMillion,
+  ModelInfo,
+  ModelsModality,
+  ModelsType,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
-
-interface OpenRouterModel {
-  name: string;
+type OpenRouterModel = {
   id: string;
+  canonical_slug: string;
+  hugging_face_id: string;
+  name: string;
+  created: number;
+  description: string;
   context_length: number;
+  architecture: {
+    modality: string;
+    input_modalities: string[];
+    output_modalities: string[];
+    tokenizer: string;
+    instruct_type: string | null;
+  };
   pricing: {
-    prompt: number;
-    completion: number;
+    prompt: string;
+    completion: string;
+    request?: string;
+    image?: string;
+    web_search?: string;
+    internal_reasoning?: string;
+    input_cache_read?: string;
+    input_cache_write?: string;
   };
-}
+  top_provider: {
+    context_length: number;
+    max_completion_tokens: number;
+    is_moderated: boolean;
+  };
+  per_request_limits: null;
+  supported_parameters: string[];
+};
 
-interface OpenRouterModelsResponse {
+type OpenRouterProviderSettings = {
+  baseURL: string;
+  apiKey: string;
+};
+
+type OpenRouterApiResponse = {
   data: OpenRouterModel[];
+};
+
+export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSettings> {
+  type: ProviderType = "OpenRouter";
+  getModelsLink = "https://openrouter.ai/api/v1/models";
+
+  createProvider(): ProviderV2 {
+    return createOpenAICompatible({
+      name: this.name,
+      baseURL: this.config.baseURL!,
+      apiKey: this.config.apiKey!,
+    });
+  }
+
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
+    const response = await fetch(this.getModelsLink, {
+      headers: {
+        Authorization: `Bearer ${this.config.apiKey!}`,
+      },
+    });
+    const data = (await response.json()) as OpenRouterApiResponse;
+
+    const models = data.data.map<ModelInfo>((model: OpenRouterModel) => {
+      const {
+        id,
+        context_length,
+        name,
+        architecture,
+        pricing,
+        supported_parameters,
+      } = model;
+
+      let type: ModelsType = "chat";
+
+      const modalities: ModelsModality[] = [];
+      if (architecture.input_modalities.includes("image")) {
+        modalities.push("vision");
+      }
+      if (architecture.output_modalities.includes("image")) {
+        modalities.push("image-generation");
+      }
+      if (architecture.output_modalities.includes("audio")) {
+        modalities.push("audio-output");
+      }
+      if (architecture.input_modalities.includes("audio")) {
+        modalities.push("audio-input");
+      }
+      if (supported_parameters.includes("tools")) {
+        modalities.push("function-call", "response-schema");
+      }
+      if (supported_parameters.includes("reasoning")) {
+        modalities.push("reasoning");
+      }
+      
+      const context: ModelContext = {
+        maxOutputTokens: context_length,
+        maxTokens: context_length,
+      };
+      
+      const price: ModelCostPerMillion = {
+        inputCost: parseFloat(pricing.prompt) * 1000000,
+        outputCost: parseFloat(pricing.completion) * 1000000,
+      };
+
+      return {
+        name: id,
+        label: id,
+        provider: "OpenRouter" as const,
+        type,
+        modalities: modalities.length > 0 ? modalities : undefined,
+        context: Object.keys(context).length > 0 ? context : undefined,
+        cost: price,
+      };
+    });
+
+    await this.storage.deleteProviderModels({
+      providerName: this.name,
+      ...metadata,
+    });
+    await this.storage.addProviderModels({
+      modelInfos: models,
+      providerName: this.name,
+      ...metadata,
+    });
+    return models;
+  }
+
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const huggingface = this.createProvider();
+    const huggingfaceInstance = huggingface.languageModel(model.name);
+    return huggingfaceInstance;
+  }
+
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const huggingface = this.createProvider();
+    const huggingfaceInstance = huggingface.languageModel(model.name);
+    return huggingfaceInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by OpenRouter."
+    );
+  }
+
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const huggingface = this.createProvider();
+    const huggingfaceInstance = huggingface.textEmbeddingModel(model.name);
+    return huggingfaceInstance;
+  }
+
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by OpenRouter."
+    );
+  }
+
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by OpenRouter."
+    );
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
+    const apiEndpoint = this.getModelsLink;
+    const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}`);
+    const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
+    return {
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
+      message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
+      incidents: [],
+    };
+  }
 }
 
-export default class OpenRouterProvider extends BaseProvider {
-  name = 'OpenRouter';
-  getApiKeyLink = 'https://openrouter.ai/settings/keys';
+export function parseOpenRouterConfig(
+  config: Record<string, any>
+): OpenRouterProviderSettings {
+  if (!config || !config.apiKey) {
+    throw new Error("Missing API key in OpenRouter configuration.");
+  }
 
-  config = {
-    apiTokenKey: 'OPEN_ROUTER_API_KEY',
+  return {
+    apiKey: config.apiKey,
+    baseURL: "https://api.hyperbolic.xyz/v1/",
   };
-
-  staticModels: ModelInfo[] = [
-    {
-      name: 'anthropic/claude-3.5-sonnet',
-      label: 'Anthropic: Claude 3.5 Sonnet (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    {
-      name: 'anthropic/claude-3-haiku',
-      label: 'Anthropic: Claude 3 Haiku (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    {
-      name: 'deepseek/deepseek-coder',
-      label: 'Deepseek-Coder V2 236B (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    {
-      name: 'google/gemini-flash-1.5',
-      label: 'Google Gemini Flash 1.5 (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    {
-      name: 'google/gemini-pro-1.5',
-      label: 'Google Gemini Pro 1.5 (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    { name: 'x-ai/grok-beta', label: 'xAI Grok Beta (OpenRouter)', provider: 'OpenRouter', maxTokenAllowed: 8000 },
-    {
-      name: 'mistralai/mistral-nemo',
-      label: 'OpenRouter Mistral Nemo (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    {
-      name: 'qwen/qwen-110b-chat',
-      label: 'OpenRouter Qwen 110b Chat (OpenRouter)',
-      provider: 'OpenRouter',
-      maxTokenAllowed: 8000,
-    },
-    { name: 'cohere/command', label: 'Cohere Command (OpenRouter)', provider: 'OpenRouter', maxTokenAllowed: 4096 },
-  ];
-
-  async getDynamicModels(
-    _apiKeys?: Record<string, string>,
-    _settings?: IProviderSetting,
-    _serverEnv: Record<string, string> = {},
-  ): Promise<ModelInfo[]> {
-    try {
-      const response = await fetch('https://openrouter.ai/api/v1/models', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = (await response.json()) as OpenRouterModelsResponse;
-
-      return data.data
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map((m) => ({
-          name: m.id,
-          label: `${m.name} - in:$${(m.pricing.prompt * 1_000_000).toFixed(2)} out:$${(m.pricing.completion * 1_000_000).toFixed(2)} - context ${Math.floor(m.context_length / 1000)}k`,
-          provider: this.name,
-          maxTokenAllowed: 8000,
-        }));
-    } catch (error) {
-      console.error('Error getting OpenRouter models:', error);
-      return [];
-    }
-  }
-
-  getModelInstance(options: {
-    model: string;
-    serverEnv: Record<string, any>;
-    apiKeys?: Record<string, string>;
-    providerSettings?: Record<string, IProviderSetting>;
-  }): LanguageModelV1 {
-    const { model, serverEnv, apiKeys, providerSettings } = options;
-
-    const { apiKey } = this.getProviderBaseUrlAndKey({
-      apiKeys,
-      providerSettings: providerSettings?.[this.name],
-      serverEnv: serverEnv as any,
-      defaultBaseUrlKey: '',
-      defaultApiTokenKey: 'OPEN_ROUTER_API_KEY',
-    });
-
-    if (!apiKey) {
-      throw new Error(`Missing API key for ${this.name} provider`);
-    }
-
-    const openRouter = createOpenRouter({
-      apiKey,
-    });
-    const instance = openRouter.chat(model) as LanguageModelV1;
-
-    return instance;
-  }
 }

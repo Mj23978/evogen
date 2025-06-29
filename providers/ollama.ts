@@ -1,9 +1,24 @@
-import { MastraTTS } from '@mastra/core/tts';
-import { MastraVoice } from '@mastra/core/voice';
-import type { EmbeddingModel, ImageModel, LanguageModelV1 } from 'ai';
-import { ollama } from 'ollama-ai-provider';
+import type {
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
+} from "@ai-sdk/provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-import { BaseEvogenProvider, EvogenNotImplementedError, EvogenProviderError, ModelInfo, ModelsModality, ModelsType, ProviderType, StatusCheckResult } from '../core';
+import {
+  BaseEvogenProvider,
+  BaseEvogenStorage,
+  EvogenNotImplementedError,
+  EvogenProviderError,
+  ModelInfo,
+  ModelsModality,
+  ModelsType,
+  ProviderType,
+  StatusCheckResult,
+} from "../core";
 
 interface OllamaModelDetails {
   parent_model: string;
@@ -27,28 +42,46 @@ export interface OllamaApiResponse {
   models: OllamaModel[];
 }
 
-const commonFamilyMaps: Record<string, { context_length: number, dimention?: number, type: ModelsType, modalities: ModelsModality[] }> = {
-  "gemma3": {
+const commonFamilyMaps: Record<
+  string,
+  {
+    context_length: number;
+    dimention?: number;
+    type: ModelsType;
+    modalities: ModelsModality[];
+  }
+> = {
+  gemma3: {
     context_length: 131072,
     type: "chat",
     modalities: ["function-call", "vision", "response-schema", "tool-choice"],
   },
-  "gemma2": {
+  qwen3: {
+    context_length: 40000,
+    type: "chat",
+    modalities: [
+      "function-call",
+      "response-schema",
+      "tool-choice",
+      "reasoning",
+    ],
+  },
+  gemma2: {
     context_length: 8196,
     type: "chat",
     modalities: [],
   },
-  "gemma": {
+  gemma: {
     context_length: 8196,
     type: "chat",
     modalities: [],
   },
-  "llama": {
+  llama: {
     context_length: 32768,
     type: "chat",
-    modalities: ["function-call",],
+    modalities: ["function-call"],
   },
-  "qwen2": {
+  qwen2: {
     context_length: 32768,
     type: "chat",
     modalities: ["function-call", "response-schema", "tool-choice"],
@@ -59,44 +92,44 @@ const commonFamilyMaps: Record<string, { context_length: number, dimention?: num
     dimention: 768,
     modalities: [],
   },
-  "deepseek2": {
+  deepseek2: {
     context_length: 131072,
     type: "chat",
     modalities: ["function-call", "response-schema", "tool-choice"],
   },
-  "exaone": {
+  exaone: {
     context_length: 32768,
     type: "chat",
     modalities: ["function-call", "response-schema", "tool-choice"],
   },
-  "phi3": {
+  phi3: {
     context_length: 131072,
     type: "chat",
     modalities: [],
   },
-  "phi2": {
+  phi2: {
     context_length: 4096,
     type: "chat",
     modalities: [],
   },
-  "bert": {
+  bert: {
     context_length: 512,
     type: "embedding",
     dimention: 1024,
     modalities: [],
   },
-  "mllama": {
+  mllama: {
     context_length: 131072,
     type: "chat",
     modalities: ["function-call", "vision"],
   },
-  "vision": {
+  vision: {
     context_length: 32768,
     type: "chat",
     modalities: ["function-call", "vision"],
   },
-}
-const visionModelNames = ["llava", "moondream", "minicpm-v"]
+};
+const visionModelNames = ["llava", "moondream", "minicpm-v"];
 
 interface OllamaConfig {
   baseUrl: string;
@@ -104,23 +137,39 @@ interface OllamaConfig {
 }
 
 export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
-  typ: ProviderType = 'Ollama';
+  type: ProviderType = "Ollama";
 
-  getBaseUrl(metadata?: Record<string, any>): string {
-    let baseUrl = this.config.baseUrl
-    if (this.config.isDocker) {
-      baseUrl = baseUrl.replace('localhost', 'host.docker.internal').replace('127.0.0.1', 'host.docker.internal');
-    }
-    return baseUrl
+  createProvider(): ProviderV2 {
+    return createOpenAICompatible({
+      name: this.name,
+      apiKey: "",
+      baseURL: this.getBaseUrl(),
+    });
   }
 
-  async syncModelsFromServer(metadata?: Record<string, any>): Promise<ModelInfo[]> {
+  getBaseUrl(metadata?: Record<string, any>): string {
+    let baseUrl = this.config.baseUrl;
+    if (this.config.isDocker) {
+      baseUrl = baseUrl
+        .replace("localhost", "host.docker.internal")
+        .replace("127.0.0.1", "host.docker.internal");
+    }
+    return baseUrl;
+  }
+
+  async syncModelsFromServer(
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
     let baseUrl = this.getBaseUrl();
     const response = await fetch(`${baseUrl}/api/tags`);
     const data = (await response.json()) as OllamaApiResponse;
 
     const models = data.models.map<ModelInfo>((model: OllamaModel) => {
-      const configs = commonFamilyMaps[model.details.family] ?? { context_length: 16384, type: "chat", modalities: [] };
+      const configs = commonFamilyMaps[model.details.family] ?? {
+        context_length: 16384,
+        type: "chat",
+        modalities: [],
+      };
       return {
         name: model.name,
         label: `${model.name} (${model.details.parameter_size})`,
@@ -128,74 +177,104 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
         type: configs.type,
         modalities: configs.modalities,
         context: {
-          maxTokens: configs.context_length
-        }
-      }
+          maxTokens: configs.context_length,
+        },
+      };
     });
-    await this.storage.deleteProviderModels({ providerName: this.name, ...metadata });
-    await this.storage.addProviderModels({ modelInfos: models, providerName: this.name, ...metadata });
+    await this.storage.deleteProviderModels({
+      providerName: this.name,
+      ...metadata,
+    });
+    await this.storage.addProviderModels({
+      modelInfos: models,
+      providerName: this.name,
+      ...metadata,
+    });
     return models;
   }
 
-
-  async _chatModel(model: ModelInfo, metadata?: Record<string, any>): Promise<LanguageModelV1> {
-    const ollamaInstance = ollama(model.name, {
-      numCtx: model.context?.maxTokens,
-      simulateStreaming: true,
-      structuredOutputs: true,
-    }) as LanguageModelV1 & { config: any };
-
-    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
-
-    return ollamaInstance;
-  }
-
-  async _completionModel(model: ModelInfo, metadata?: Record<string, any>): Promise<LanguageModelV1> {
-    const ollamaInstance = ollama(model.name, {
-      numCtx: model.context?.maxTokens,
-      simulateStreaming: true,
-      structuredOutputs: true,
-    }) as LanguageModelV1 & { config: any };
+  async _chatModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.languageModel(
+      model.name
+    ) as LanguageModelV2 & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
     return ollamaInstance;
   }
 
-  async _imageModel(model: ModelInfo, metadata?: Record<string, any>): Promise<ImageModel> {
-    throw new EvogenNotImplementedError('Audio models are not supported by Ollama.');
-  }
-
-  async _embeddingModel(model: ModelInfo, metadata?: Record<string, any>): Promise<EmbeddingModel<string>> {
-    const ollamaInstance = ollama.textEmbeddingModel(model.name, {
-      truncate: true
-    }) as EmbeddingModel<string> & { config: any };;
+  async _completionModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<LanguageModelV2> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.languageModel(
+      model.name
+    ) as LanguageModelV2 & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
     return ollamaInstance;
   }
 
-  async _audioModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraVoice> {
-    throw new EvogenNotImplementedError('Audio models are not supported by Ollama.');
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by Ollama."
+    );
   }
 
-  async _speachToTextModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraVoice> {
-    throw new EvogenNotImplementedError('Speach models are not supported by Ollama.');
+  async _embeddingModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<EmbeddingModelV2<string>> {
+    const ollama = this.createProvider();
+    const ollamaInstance = ollama.textEmbeddingModel(model.name) as EmbeddingModelV2<string> & { config: any };
+
+    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+
+    return ollamaInstance;
   }
 
-  async _textToSpeachModel(model: ModelInfo, metadata?: Record<string, any>): Promise<MastraTTS> {
-    throw new EvogenNotImplementedError('TTS models are not supported by Ollama.');
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by Ollama."
+    );
   }
 
-  async checkStatus(metadata?: Record<string, any>): Promise<StatusCheckResult> {
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by Ollama."
+    );
+  }
+
+  async checkStatus(
+    metadata?: Record<string, any>
+  ): Promise<StatusCheckResult> {
     const apiEndpoint = this.getBaseUrl();
-    const apiStatus = await this.checkEndpointStatus(`${apiEndpoint}/api/models`);
+    const apiStatus = await this.checkEndpointStatus(
+      `${apiEndpoint}/api/models`
+    );
     const endpointStatus = await this.checkEndpointStatus(apiEndpoint);
     return {
-      status: endpointStatus === 'reachable' && apiStatus === 'reachable' ? 'operational' : 'degraded',
+      status:
+        endpointStatus === "reachable" && apiStatus === "reachable"
+          ? "operational"
+          : "degraded",
       message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
-      incidents: []
+      incidents: [],
     };
   }
 }
@@ -205,6 +284,6 @@ export function parseOllamaConfig(config: Record<string, any>): OllamaConfig {
 
   return {
     baseUrl: baseUrl ?? "http://localhost:11434",
-    isDocker
+    isDocker,
   };
 }
