@@ -1,7 +1,6 @@
 # EvoGen
 
-EvoGen is a TypeScript package that routes different Vercel SDK AI providers with a model name. It provides a flexible and extensible way to manage and interact with various AI providers.
-
+A TypeScript wrapper to seamlessly route multiple Vercel AI providers by model name, offering unparalleled flexibility and extensibility for managing diverse AI services—inspired by the provider-routing architecture of litellm but optimized for TypeScript/Vercel workflows
 ## Table of Contents
 
 - [EvoGen](#evogen)
