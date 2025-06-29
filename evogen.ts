@@ -1,5 +1,49 @@
-import { BaseEvogenProvider, BaseEvogenStorage, EvogenError, ProviderInfo } from './core';
-import { OllamaProvider, parseOllamaConfig } from './providers/ollama';
+import {
+  BaseEvogenProvider,
+  BaseEvogenStorage,
+  EvogenError,
+  ProviderInfo,
+} from "./core";
+import {
+  AmazonBedrockProvider,
+  parseAmazonBedrockConfig,
+} from "./providers/amazon-bedrock";
+import { AnthropicProvider, parseAnthropicConfig } from "./providers/anthropic";
+import { CohereProvider, parseCohereConfig } from "./providers/cohere";
+import { DeepSeekProvider, parseDeepSeekConfig } from "./providers/deepseek";
+import { GithubProvider, parseGithubConfig } from "./providers/github";
+import { GoogleProvider, parseGoogleConfig } from "./providers/google";
+import { GroqProvider, parseGroqConfig } from "./providers/groq";
+import {
+  HuggingFaceProvider,
+  parseHuggingFaceConfig,
+} from "./providers/huggingface";
+import {
+  HyperbolicProvider,
+  parseHyperbolicConfig,
+} from "./providers/hyperbolic";
+import { LMStudioProvider, parseLMStudioConfig } from "./providers/lmstudio";
+import { MistralProvider, parseMistralConfig } from "./providers/mistral";
+import { OllamaProvider, parseOllamaConfig } from "./providers/ollama";
+import {
+  OpenRouterProvider,
+  parseOpenRouterConfig,
+} from "./providers/open-router";
+import { OpenAIProvider, parseOpenAIConfig } from "./providers/openai";
+import {
+  OpenAICompatibleProvider,
+  parseOpenAICompatibleConfig,
+} from "./providers/openai-compatible";
+import {
+  PerplexityProvider,
+  parsePerplexityConfig,
+} from "./providers/perplexity";
+import {
+  TogetherAIProvider,
+  parseTogetherAIConfig,
+} from "./providers/together";
+import { XaiProvider, parseXaiConfig } from "./providers/xai";
+
 
 export class EvoGen {
   strategies: Map<string, BaseEvogenStorage<{}>>;
@@ -17,63 +61,169 @@ export class EvoGen {
     throw new EvogenError("No storage strategy found for the given strategy");
   }
 
-  async getProviderApiKey(info: ProviderInfo, strategy: string, metadata?: Record<string, any>): Promise<string> {
+  async getProviderApiKey(
+    info: ProviderInfo,
+    strategy: string,
+    metadata?: Record<string, any>
+  ): Promise<string> {
     if (info.config?.apiKey) {
       return info.config?.apiKey;
     }
     if (info.keys.apiKeyEnv) {
       const storage = this.getStorage(strategy);
-      const apiKey = await storage.getApiKey({ name: info.keys.apiKeyEnv, ...metadata });
+      const apiKey = await storage.getApiKey({
+        name: info.keys.apiKeyEnv,
+        ...metadata,
+      });
       return apiKey;
     }
     throw new EvogenError("No API key found for the given provider");
   }
 
-  async getProviderByType(info: ProviderInfo, strategy: string, metadata?: Record<string, any>): Promise<BaseEvogenProvider<any>> {
+  async getProviderByType(
+    info: ProviderInfo,
+    strategy: string,
+    metadata?: Record<string, any>
+  ): Promise<BaseEvogenProvider<any>> {
     const storage = this.getStorage(strategy);
     switch (info.type) {
-      case 'Ollama':
-        const config = parseOllamaConfig(info.config ?? {});
-        return new OllamaProvider(info.name, config, storage);
-      // case 'AmazonBedrock':
-      //   return new AmazonBedrockStatusChecker(config);
-      // case 'Cohere':
-      //   return new CohereStatusChecker(config);
-      // case 'Deepseek':
-      //   return new DeepseekStatusChecker(config);
-      // case 'Google':
-      //   return new GoogleStatusChecker(config);
-      // case 'Groq':
-      //   return new GroqStatusChecker(config);
-      // case 'HuggingFace':
-      //   return new HuggingFaceStatusChecker(config);
-      // case 'Hyperbolic':
-      //   return new HyperbolicStatusChecker(config);
-      // case 'Mistral':
-      //   return new MistralStatusChecker(config);
-      // case 'OpenRouter':
-      //   return new OpenRouterStatusChecker(config);
-      // case 'Perplexity':
-      //   return new PerplexityStatusChecker(config);
-      // case 'Together':
-      //   return new TogetherStatusChecker(config);
-      // case 'XAI':
-      //   return new XAIStatusChecker(config);
+      case "AmazonBedrock":
+        return new AmazonBedrockProvider(
+          info.name,
+          parseAmazonBedrockConfig(info.config ?? {}),
+          storage
+        );
+      case "Anthropic":
+        return new AnthropicProvider(
+          info.name,
+          parseAnthropicConfig(info.config ?? {}),
+          storage
+        );
+      case "Cohere":
+        return new CohereProvider(
+          info.name,
+          parseCohereConfig(info.config ?? {}),
+          storage
+        );
+      case "Deepseek":
+        return new DeepSeekProvider(
+          info.name,
+          parseDeepSeekConfig(info.config ?? {}),
+          storage
+        );
+      case "Github":
+        return new GithubProvider(
+          info.name,
+          parseGithubConfig(info.config ?? {}),
+          storage
+        );
+      case "Google":
+        return new GoogleProvider(
+          info.name,
+          parseGoogleConfig(info.config ?? {}),
+          storage
+        );
+      case "Groq":
+        return new GroqProvider(
+          info.name,
+          parseGroqConfig(info.config ?? {}),
+          storage
+        );
+      case "HuggingFace":
+        return new HuggingFaceProvider(
+          info.name,
+          parseHuggingFaceConfig(info.config ?? {}),
+          storage
+        );
+      case "Hyperbolic":
+        return new HyperbolicProvider(
+          info.name,
+          parseHyperbolicConfig(info.config ?? {}),
+          storage
+        );
+      case "LMStudio":
+        return new LMStudioProvider(
+          info.name,
+          parseLMStudioConfig(info.config ?? {}),
+          storage
+        );
+      case "Mistral":
+        return new MistralProvider(
+          info.name,
+          parseMistralConfig(info.config ?? {}),
+          storage
+        );
+      case "Ollama":
+        return new OllamaProvider(
+          info.name,
+          parseOllamaConfig(info.config ?? {}),
+          storage
+        );
+      case "OpenRouter":
+        return new OpenRouterProvider(
+          info.name,
+          parseOpenRouterConfig(info.config ?? {}),
+          storage
+        );
+      case "Perplexity":
+        return new PerplexityProvider(
+          info.name,
+          parsePerplexityConfig(info.config ?? {}),
+          storage
+        );
+      case "Together":
+        return new TogetherAIProvider(
+          info.name,
+          parseTogetherAIConfig(info.config ?? {}),
+          storage
+        );
+      case "XAI":
+        return new XaiProvider(
+          info.name,
+          parseXaiConfig(info.config ?? {}),
+          storage
+        );
+      case "OpenAILike":
+        return new OpenAICompatibleProvider(
+          info.name,
+          parseOpenAICompatibleConfig(info.config ?? {}),
+          storage
+        );
       default:
         throw new EvogenError("Unknown provider type");
     }
   }
 
-  async getProviderConfigs(name: string, strategy: string, metadata?: Record<string, any>): Promise<Record<string, any>> {
+  async getProviderConfigs(
+    name: string,
+    strategy: string,
+    metadata?: Record<string, any>
+  ): Promise<Record<string, any>> {
     const storage = this.getStorage(strategy);
-    const provider = await storage.getProvider({ providerName: name, ...metadata });
+    const provider = await storage.getProvider({
+      providerName: name,
+      ...metadata,
+    });
     return { ...provider.keys, ...provider.metadata };
   }
 
-  async getProvider(name: string, strategy: string, config?: Record<string, any>, metadata?: Record<string, any>): Promise<BaseEvogenProvider<any>> {
+  async getProvider(
+    name: string,
+    strategy: string,
+    config?: Record<string, any>,
+    metadata?: Record<string, any>
+  ): Promise<BaseEvogenProvider<any>> {
     const storage = this.getStorage(strategy);
-    const provider = await storage.getProvider({ providerName: name, ...metadata });
-    provider.config = { ...provider.keys, ...provider.metadata, ...provider.config, ...config };
+    const provider = await storage.getProvider({
+      providerName: name,
+      ...metadata,
+    });
+    provider.config = {
+      ...provider.keys,
+      ...provider.metadata,
+      ...provider.config,
+      ...config,
+    };
     return this.getProviderByType(provider, strategy);
   }
 
@@ -91,7 +241,6 @@ export class EvoGen {
   //     }
   //   })(config);
   // }
-
 
   // async updateModelList(options: {
   //   apiKeys?: Record<string, string>;
@@ -149,7 +298,6 @@ export class EvoGen {
 
   //   return modelList;
   // }
-
 }
 
 export default EvoGen;

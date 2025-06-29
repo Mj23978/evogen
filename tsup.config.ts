@@ -4,7 +4,7 @@ export default defineConfig({
   entry: ['./index.ts'], // Your entry point
   outDir: 'dist', // Output directory
   format: ['esm'], // CommonJS format
-  sourcemap: true,
+  sourcemap: false,
   clean: true,
   shims: true, // Convert import.meta.url to a shim for CJS
   minify: true, // Set to true if you want to minify the output

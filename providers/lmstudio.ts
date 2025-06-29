@@ -20,7 +20,7 @@ import {
   StatusCheckResult,
 } from "../core";
 
-interface OllamaModelDetails {
+interface LMStudioModelDetails {
   parent_model: string;
   format: string;
   family: string;
@@ -29,115 +29,25 @@ interface OllamaModelDetails {
   quantization_level: string;
 }
 
-export interface OllamaModel {
+export interface LMStudioModel {
   name: string;
   model: string;
   modified_at: string;
   size: number;
   digest: string;
-  details: OllamaModelDetails;
+  details: LMStudioModelDetails;
 }
 
-export interface OllamaApiResponse {
-  models: OllamaModel[];
+export interface LMStudioApiResponse {
+  models: LMStudioModel[];
 }
-
-const commonFamilyMaps: Record<
-  string,
-  {
-    context_length: number;
-    dimention?: number;
-    type: ModelsType;
-    modalities: ModelsModality[];
-  }
-> = {
-  gemma3: {
-    context_length: 131072,
-    type: "chat",
-    modalities: ["function-call", "vision", "response-schema", "tool-choice"],
-  },
-  qwen3: {
-    context_length: 40000,
-    type: "chat",
-    modalities: [
-      "function-call",
-      "response-schema",
-      "tool-choice",
-      "reasoning",
-    ],
-  },
-  gemma2: {
-    context_length: 8196,
-    type: "chat",
-    modalities: [],
-  },
-  gemma: {
-    context_length: 8196,
-    type: "chat",
-    modalities: [],
-  },
-  llama: {
-    context_length: 32768,
-    type: "chat",
-    modalities: ["function-call"],
-  },
-  qwen2: {
-    context_length: 32768,
-    type: "chat",
-    modalities: ["function-call", "response-schema", "tool-choice"],
-  },
-  "nomic-bert": {
-    context_length: 2048,
-    type: "embedding",
-    dimention: 768,
-    modalities: [],
-  },
-  deepseek2: {
-    context_length: 131072,
-    type: "chat",
-    modalities: ["function-call", "response-schema", "tool-choice"],
-  },
-  exaone: {
-    context_length: 32768,
-    type: "chat",
-    modalities: ["function-call", "response-schema", "tool-choice"],
-  },
-  phi3: {
-    context_length: 131072,
-    type: "chat",
-    modalities: [],
-  },
-  phi2: {
-    context_length: 4096,
-    type: "chat",
-    modalities: [],
-  },
-  bert: {
-    context_length: 512,
-    type: "embedding",
-    dimention: 1024,
-    modalities: [],
-  },
-  mllama: {
-    context_length: 131072,
-    type: "chat",
-    modalities: ["function-call", "vision"],
-  },
-  vision: {
-    context_length: 32768,
-    type: "chat",
-    modalities: ["function-call", "vision"],
-  },
-};
-const visionModelNames = ["llava", "moondream", "minicpm-v"];
-
-interface OllamaConfig {
+interface LMStudioConfig {
   baseUrl: string;
   isDocker?: boolean;
 }
 
-export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
-  type: ProviderType = "Ollama";
+export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
+  type: ProviderType = "LMStudio";
 
   createProvider(): ProviderV2 {
     return createOpenAICompatible({
@@ -170,28 +80,28 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<LanguageModelV2> {
-    const ollama = this.createProvider();
-    const ollamaInstance = ollama.languageModel(
+    const lmstudio = this.createProvider();
+    const lmstudioInstance = lmstudio.languageModel(
       model.name
     ) as LanguageModelV2 & { config: any };
 
-    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+    lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
-    return ollamaInstance;
+    return lmstudioInstance;
   }
 
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<LanguageModelV2> {
-    const ollama = this.createProvider();
-    const ollamaInstance = ollama.languageModel(
+    const lmstudio = this.createProvider();
+    const lmstudioInstance = lmstudio.languageModel(
       model.name
     ) as LanguageModelV2 & { config: any };
 
-    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+    lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
-    return ollamaInstance;
+    return lmstudioInstance;
   }
 
   async _imageModel(
@@ -199,7 +109,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     metadata?: Record<string, any>
   ): Promise<ImageModelV2> {
     throw new EvogenNotImplementedError(
-      "Audio models are not supported by Ollama."
+      "Audio models are not supported by LMStudio."
     );
   }
 
@@ -207,14 +117,14 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     model: ModelInfo,
     metadata?: Record<string, any>
   ): Promise<EmbeddingModelV2<string>> {
-    const ollama = this.createProvider();
-    const ollamaInstance = ollama.textEmbeddingModel(
+    const lmstudio = this.createProvider();
+    const lmstudioInstance = lmstudio.textEmbeddingModel(
       model.name
     ) as EmbeddingModelV2<string> & { config: any };
 
-    ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
+    lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
-    return ollamaInstance;
+    return lmstudioInstance;
   }
 
   async _speachToTextModel(
@@ -222,7 +132,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     metadata?: Record<string, any>
   ): Promise<SpeechModelV2> {
     throw new EvogenNotImplementedError(
-      "Speach models are not supported by Ollama."
+      "Speach models are not supported by LMStudio."
     );
   }
 
@@ -231,7 +141,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     metadata?: Record<string, any>
   ): Promise<TranscriptionModelV2> {
     throw new EvogenNotImplementedError(
-      "TTS models are not supported by Ollama."
+      "TTS models are not supported by LMStudio."
     );
   }
 
@@ -254,7 +164,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   }
 }
 
-export function parseOllamaConfig(config: Record<string, any>): OllamaConfig {
+export function parseLMStudioConfig(config: Record<string, any>): LMStudioConfig {
   const { baseUrl, isDocker } = config;
 
   return {
