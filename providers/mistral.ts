@@ -1,4 +1,4 @@
-import { mistral, MistralProviderSettings } from "@ai-sdk/mistral";
+import { type MistralProviderSettings, mistral } from "@ai-sdk/mistral";
 import type {
   EmbeddingModelV2,
   ImageModelV2,
@@ -11,11 +11,11 @@ import type {
 import {
   BaseEvogenProvider,
   EvogenNotImplementedError,
-  ModelInfo,
-  ModelsModality,
-  ModelsType,
-  ProviderType,
-  StatusCheckResult,
+  type ModelInfo,
+  type ModelsModality,
+  type ModelsType,
+  type ProviderType,
+  type StatusCheckResult,
 } from "../core";
 
 type MistralModel = {
@@ -42,7 +42,7 @@ type MistralModel = {
 };
 
 type MistralApiResponse = {
-  object: string,
+  object: string;
   data: MistralModel[];
 };
 
@@ -57,15 +57,15 @@ export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings>
   async syncModelsFromServer(
     metadata?: Record<string, any>
   ): Promise<ModelInfo[]> {
-    const response = await fetch(this.getModelsLink + "?page_size=1000", {
+    const response = await fetch(`${this.getModelsLink}?page_size=1000`, {
       headers: {
-        Authorization: `Bearer ${this.config.apiKey!}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
       },
     });
     const data = (await response.json()) as MistralApiResponse;
 
     const models = data.data.map<ModelInfo>((model: MistralModel) => {
-      const { name, capabilities, id, max_context_length, ...rest } = model;
+      const { capabilities, id, max_context_length } = model;
 
       let type: ModelsType = "chat";
       if (id.includes("moderation")) {

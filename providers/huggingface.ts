@@ -11,15 +11,14 @@ import type {
 import {
   BaseEvogenProvider,
   EvogenNotImplementedError,
-  ModelContext,
-  ModelInfo,
-  ModelsModality,
-  ModelsType,
-  ProviderType,
-  StatusCheckResult,
+  type ModelInfo,
+  type ModelsModality,
+  type ModelsType,
+  type ProviderType,
+  type StatusCheckResult,
 } from "../core";
 
-type HuggingFaceModel =  {
+type HuggingFaceModel = {
   _id: string;
   id: string;
   likes: number;
@@ -30,7 +29,7 @@ type HuggingFaceModel =  {
   pipeline_tag?: string | undefined;
   library_name: string;
   createdAt: string;
-  modelId?: string
+  modelId?: string;
 };
 
 type HuggingFaceProviderSettings = {
@@ -47,8 +46,8 @@ export class HuggingFaceProvider extends BaseEvogenProvider<HuggingFaceProviderS
   createProvider(): ProviderV2 {
     return createOpenAICompatible({
       name: this.name,
-      baseURL: this.config.baseURL!,
-      apiKey: this.config.apiKey!,
+      baseURL: this.config.baseURL,
+      apiKey: this.config.apiKey,
     });
   }
 
@@ -57,65 +56,67 @@ export class HuggingFaceProvider extends BaseEvogenProvider<HuggingFaceProviderS
   ): Promise<ModelInfo[]> {
     const response = await fetch(this.getModelsLink, {
       headers: {
-        Authorization: `Bearer ${this.config.apiKey!}`,
+        Authorization: `Bearer ${this.config.apiKey}`,
       },
     });
     const data = (await response.json()) as HuggingFaceApiResponse;
 
-    const models = data.filter(model => {
-      return (
-        model.pipeline_tag === "image-to-image" ||
-        model.pipeline_tag === "text-generation" ||
-        model.pipeline_tag === "text-to-speech" ||
-        model.pipeline_tag === "image-text-to-text" ||
-        model.pipeline_tag === "any-to-any" ||
-        model.pipeline_tag === "sentence-similarity" ||
-        model.pipeline_tag === "text-to-image" ||
-        model.pipeline_tag === "automatic-speech-recognition"
-      ); 
-    }).map<ModelInfo>((model: HuggingFaceModel) => {
-      const { id, modelId, pipeline_tag, tags, ...rest } = model;
+    const models = data
+      .filter((model) => {
+        return (
+          model.pipeline_tag === "image-to-image" ||
+          model.pipeline_tag === "text-generation" ||
+          model.pipeline_tag === "text-to-speech" ||
+          model.pipeline_tag === "image-text-to-text" ||
+          model.pipeline_tag === "any-to-any" ||
+          model.pipeline_tag === "sentence-similarity" ||
+          model.pipeline_tag === "text-to-image" ||
+          model.pipeline_tag === "automatic-speech-recognition"
+        );
+      })
+      .map<ModelInfo>((model: HuggingFaceModel) => {
+        const { id, pipeline_tag } = model;
 
-      const modalities: ModelsModality[] = [];
+        const modalities: ModelsModality[] = [];
 
-      let type: ModelsType = "chat";
-      if (pipeline_tag === "image-to-image") {
-        type = "image-generation";
-      }
-      if (pipeline_tag === "image-text-to-text") {
-        modalities.push("vision");
-      }
-      if (pipeline_tag === "any-to-any") {
-        modalities.push("vision");
-        modalities.push("audio-input");
-        modalities.push("audio-output");
-        modalities.push("video-input");
-      }
-      if (pipeline_tag === "text-to-speech") {
-        type = "text-to-speach";
-      }
-      if (pipeline_tag === "text-to-image") {
-        type = "image-generation";
-      }
-      if (pipeline_tag === "automatic-speech-recognition") {
-        type = "speech-to-text";
-      }
-      if (pipeline_tag === "sentence-similarity") {
-        type = "embedding";
-      }
-      if (id.includes("guard")) {
-        type = "moderation";
-      }
+        let type: ModelsType = "chat";
+        if (pipeline_tag === "image-to-image") {
+          type = "image-generation";
+        }
+        if (pipeline_tag === "image-text-to-text") {
+          modalities.push("vision");
+        }
+        if (pipeline_tag === "any-to-any") {
+          modalities.push("vision");
+          modalities.push("audio-input");
+          modalities.push("audio-output");
+          modalities.push("video-input");
+        }
+        if (pipeline_tag === "text-to-speech") {
+          type = "text-to-speach";
+        }
+        if (pipeline_tag === "text-to-image") {
+          type = "image-generation";
+        }
+        if (pipeline_tag === "automatic-speech-recognition") {
+          type = "speech-to-text";
+        }
+        if (pipeline_tag === "sentence-similarity") {
+          type = "embedding";
+        }
+        if (id.includes("guard")) {
+          type = "moderation";
+        }
 
-      return {
-        name: id,
-        label: id,
-        provider: "HuggingFace" as const,
-        type,
-        modalities: modalities.length > 0 ? modalities : undefined,
-        cost: undefined, // not available in JSON
-      };
-    });
+        return {
+          name: id,
+          label: id,
+          provider: "HuggingFace" as const,
+          type,
+          modalities: modalities.length > 0 ? modalities : undefined,
+          cost: undefined, // not available in JSON
+        };
+      });
     await this.storage.deleteProviderModels({
       providerName: this.name,
       ...metadata,
@@ -208,6 +209,6 @@ export function parseHuggingFaceConfig(
 
   return {
     apiKey: config.apiKey,
-    baseURL: 'https://api-inference.huggingface.co/v1/'
+    baseURL: "https://api-inference.huggingface.co/v1/",
   };
 }

@@ -1,96 +1,92 @@
 {
-  "name": "@fluttensor-ai/evogen",
-  "version": "0.0.6-beta",
-  "description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
-  "private": false,
-  "keywords": [
-    "AI",
-    "gateway",
-    "vercel",
-    "ai-sdk"
-  ],
-  "author": "Fluttensor",
-  "license": "MIT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist/**/*"
-  ],
-  "scripts": {
-    "build": "pnpm clean && tsup --tsconfig tsconfig.build.json",
-    "build:watch": "pnpm clean && tsup --watch",
-    "gen:models": "ts-node scripts/fetch-models.ts",
-    "clean": "rm -rf dist *.tsbuildinfo",
-    "lint": "eslint \"./**/*.ts*\"",
-    "type-check": "tsc --build",
-    "prettier-check": "prettier --check \"./**/*.ts*\"",
-    "test": "vitest",
-    "test:update": "pnpm test:node -u",
-    "test:watch": "vitest --config vitest.node.config.js",
-    "test:edge": "vitest --config vitest.edge.config.js --run",
-    "test:node": "vitest --config vitest.node.config.js --run"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mj23978/evogen.git"
-  },
-  "bugs": {
-    "url": "https://github.com/mj23978/evogen/issues"
-  },
-  "homepage": "https://github.com/mj23978/evogen#readme",
-  "dependencies": {
-    "@ai-sdk/amazon-bedrock": "3.0.0-beta.2",
-    "@ai-sdk/anthropic": "2.0.0-beta.3",
-    "@ai-sdk/assemblyai": "1.0.0-beta.2",
-    "@ai-sdk/azure": "2.0.0-beta.2",
-    "@ai-sdk/cerebras": "1.0.0-beta.2",
-    "@ai-sdk/cohere": "2.0.0-beta.2",
-    "@ai-sdk/deepgram": "1.0.0-beta.2",
-    "@ai-sdk/deepseek": "1.0.0-beta.2",
-    "@ai-sdk/elevenlabs": "1.0.0-beta.2",
-    "@ai-sdk/fal": "1.0.0-beta.2",
-    "@ai-sdk/fireworks": "1.0.0-beta.2",
-    "@ai-sdk/gladia": "1.0.0-beta.2",
-    "@ai-sdk/google": "2.0.0-beta.3",
-    "@ai-sdk/groq": "2.0.0-beta.2",
-    "@ai-sdk/lmnt": "1.0.0-beta.2",
-    "@ai-sdk/mistral": "2.0.0-beta.2",
-    "@ai-sdk/openai": "2.0.0-beta.2",
-    "@ai-sdk/openai-compatible": "1.0.0-beta.2",
-    "@ai-sdk/perplexity": "2.0.0-beta.2",
-    "@ai-sdk/provider": "2.0.0-beta.1",
-    "@ai-sdk/provider-utils": "3.0.0-beta.2",
-    "@ai-sdk/replicate": "1.0.0-beta.2",
-    "@ai-sdk/revai": "1.0.0-beta.2",
-    "@ai-sdk/togetherai": "1.0.0-beta.2",
-    "@ai-sdk/valibot": "1.0.0-beta.2",
-    "@ai-sdk/xai": "2.0.0-beta.2",
-    "ai": "5.0.0-beta.3",
-    "chalk": "^5.4.1",
-    "dotenv": "^16.4.5",
-    "superjson": "^2.2.1",
-    "zod": "^3.25.49"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.2",
-    "axios": "^1.8.4",
-    "cross-env": "^7.0.3",
-    "dotenv": "^16.4.7",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.4.0",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
-  },
-  "peerDependencies": {
-    "zod": "^3.25.49"
-  }
+	"name": "@fluttensor-ai/evogen",
+	"version": "0.0.6-beta",
+	"description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
+	"private": false,
+	"keywords": [
+		"AI",
+		"gateway",
+		"vercel",
+		"ai-sdk"
+	],
+	"author": "Fluttensor",
+	"license": "MIT",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist/**/*"
+	],
+	"scripts": {
+		"build": "pnpm clean && tsup",
+		"build:watch": "pnpm clean && tsup --watch",
+		"gen:models": "ts-node scripts/fetch-models.ts",
+		"clean": "rimraf dist ",
+		"lint": "biome check --write",
+		"type-check": "tsc --build",
+		"prettier-check": "prettier --check \"./**/*.ts*\"",
+		"test": "vitest",
+		"test:update": "pnpm test:node -u",
+		"test:watch": "vitest --config vitest.node.config.js",
+		"test:edge": "vitest --config vitest.edge.config.js --run",
+		"test:node": "vitest --config vitest.node.config.js --run"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mj23978/evogen.git"
+	},
+	"bugs": {
+		"url": "https://github.com/mj23978/evogen/issues"
+	},
+	"homepage": "https://github.com/mj23978/evogen#readme",
+	"dependencies": {
+		"@ai-sdk/amazon-bedrock": "3.0.0-beta.2",
+		"@ai-sdk/anthropic": "2.0.0-beta.3",
+		"@ai-sdk/assemblyai": "1.0.0-beta.2",
+		"@ai-sdk/azure": "2.0.0-beta.2",
+		"@ai-sdk/cerebras": "1.0.0-beta.2",
+		"@ai-sdk/cohere": "2.0.0-beta.2",
+		"@ai-sdk/deepgram": "1.0.0-beta.2",
+		"@ai-sdk/deepseek": "1.0.0-beta.2",
+		"@ai-sdk/elevenlabs": "1.0.0-beta.2",
+		"@ai-sdk/fireworks": "1.0.0-beta.2",
+		"@ai-sdk/google": "2.0.0-beta.3",
+		"@ai-sdk/groq": "2.0.0-beta.2",
+		"@ai-sdk/lmnt": "1.0.0-beta.2",
+		"@ai-sdk/mistral": "2.0.0-beta.2",
+		"@ai-sdk/openai": "2.0.0-beta.2",
+		"@ai-sdk/openai-compatible": "1.0.0-beta.2",
+		"@ai-sdk/perplexity": "2.0.0-beta.2",
+		"@ai-sdk/provider": "2.0.0-beta.1",
+		"@ai-sdk/provider-utils": "3.0.0-beta.2",
+		"@ai-sdk/replicate": "1.0.0-beta.2",
+		"@ai-sdk/togetherai": "1.0.0-beta.2",
+		"@ai-sdk/xai": "2.0.0-beta.2",
+		"ai": "5.0.0-beta.3",
+		"dotenv": "^16.4.5",
+		"zod": "^3.25.49"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.0.0",
+		"@types/node": "^22.10.2",
+		"axios": "^1.8.4",
+		"cross-env": "^7.0.3",
+		"dotenv": "^16.4.7",
+		"rimraf": "^6.0.1",
+		"ts-node": "^10.9.2",
+		"tsup": "^8.4.0",
+		"typescript": "^5.7.2",
+		"vitest": "^2.1.8"
+	},
+	"peerDependencies": {
+		"zod": "^3.25.49"
+	}
 }

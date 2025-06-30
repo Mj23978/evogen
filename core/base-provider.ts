@@ -7,8 +7,13 @@ import type {
   TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
-import { BaseEvogenStorage } from "./base-storage";
-import { ApiResponse, ModelInfo, ModelsType, StatusCheckResult } from "./types";
+import type { BaseEvogenStorage } from "./base-storage";
+import type {
+  ApiResponse,
+  ModelInfo,
+  ModelsType,
+  StatusCheckResult,
+} from "./types";
 
 export abstract class BaseEvogenProvider<T> {
   name: string;

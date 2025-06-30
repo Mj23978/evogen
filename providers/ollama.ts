@@ -1,3 +1,4 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
   EmbeddingModelV2,
   ImageModelV2,
@@ -6,18 +7,15 @@ import type {
   SpeechModelV2,
   TranscriptionModelV2,
 } from "@ai-sdk/provider";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 import {
   BaseEvogenProvider,
-  BaseEvogenStorage,
   EvogenNotImplementedError,
-  EvogenProviderError,
-  ModelInfo,
-  ModelsModality,
-  ModelsType,
-  ProviderType,
-  StatusCheckResult,
+  type ModelInfo,
+  type ModelsModality,
+  type ModelsType,
+  type ProviderType,
+  type StatusCheckResult,
 } from "../core";
 
 interface OllamaModelDetails {
@@ -129,7 +127,7 @@ const commonFamilyMaps: Record<
     modalities: ["function-call", "vision"],
   },
 };
-const visionModelNames = ["llava", "moondream", "minicpm-v"];
+// const visionModelNames = ["llava", "moondream", "minicpm-v"];
 
 interface OllamaConfig {
   baseURL: string;
@@ -160,7 +158,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async syncModelsFromServer(
     metadata?: Record<string, any>
   ): Promise<ModelInfo[]> {
-    let baseURL = this.getBaseUrl();
+    const baseURL = this.getBaseUrl();
     const response = await fetch(`${baseURL}/api/tags`);
     const data = (await response.json()) as OllamaApiResponse;
 
@@ -235,7 +233,9 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     metadata?: Record<string, any>
   ): Promise<EmbeddingModelV2<string>> {
     const ollama = this.createProvider();
-    const ollamaInstance = ollama.textEmbeddingModel(model.name) as EmbeddingModelV2<string> & { config: any };
+    const ollamaInstance = ollama.textEmbeddingModel(
+      model.name
+    ) as EmbeddingModelV2<string> & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
