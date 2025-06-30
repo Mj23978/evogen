@@ -1,456 +1,398 @@
 // Auto-generated model configuration
 // Generated on 2025-06-28T19:02:34.492Z
 
-import { ModelInfo } from '../../core/types';
+import type { ModelInfo } from "../../core/types";
 
 const models: ModelInfo[] = [
-  {
-    "name": "mistral-tiny",
-    "label": "mistral tiny",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 0.25,
-      "outputCost": 0.25
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-small",
-    "label": "mistral small",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 0.1,
-      "outputCost": 0.3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-small-latest",
-    "label": "mistral small latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 0.1,
-      "outputCost": 0.3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-medium",
-    "label": "mistral medium",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 2.7,
-      "outputCost": 8.1
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-medium-latest",
-    "label": "mistral medium latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 2.7,
-      "outputCost": 8.1
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-medium-2312",
-    "label": "mistral medium 2312",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 2.7,
-      "outputCost": 8.1
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-large-latest",
-    "label": "mistral large latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 2,
-      "outputCost": 6
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-large-2411",
-    "label": "mistral large 2411",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 2,
-      "outputCost": 6
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-large-2402",
-    "label": "mistral large 2402",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 4,
-      "outputCost": 12
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-large-2407",
-    "label": "mistral large 2407",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 3,
-      "outputCost": 9
-    },
-    "metadata": {}
-  },
-  {
-    "name": "pixtral-large-latest",
-    "label": "pixtral large latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice",
-      "vision"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 2,
-      "outputCost": 6
-    },
-    "metadata": {}
-  },
-  {
-    "name": "pixtral-large-2411",
-    "label": "pixtral large 2411",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice",
-      "vision"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 2,
-      "outputCost": 6
-    },
-    "metadata": {}
-  },
-  {
-    "name": "pixtral-12b-2409",
-    "label": "pixtral 12b 2409",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice",
-      "vision"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 0.15,
-      "outputCost": 0.15
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-mistral-7b",
-    "label": "open mistral 7b",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 0.25,
-      "outputCost": 0.25
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-mixtral-8x7b",
-    "label": "open mixtral 8x7b",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 0.7,
-      "outputCost": 0.7
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-mixtral-8x22b",
-    "label": "open mixtral 8x22b",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "function-call",
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 65336,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 2,
-      "outputCost": 6
-    },
-    "metadata": {}
-  },
-  {
-    "name": "codestral-latest",
-    "label": "codestral latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 1,
-      "outputCost": 3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "codestral-2405",
-    "label": "codestral 2405",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 8191,
-      "maxInputTokens": 32000,
-      "maxOutputTokens": 8191
-    },
-    "cost": {
-      "inputCost": 1,
-      "outputCost": 3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-mistral-nemo",
-    "label": "open mistral nemo",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 0.3,
-      "outputCost": 0.3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-mistral-nemo-2407",
-    "label": "open mistral nemo 2407",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 128000,
-      "maxInputTokens": 128000,
-      "maxOutputTokens": 128000
-    },
-    "cost": {
-      "inputCost": 0.3,
-      "outputCost": 0.3
-    },
-    "metadata": {}
-  },
-  {
-    "name": "open-codestral-mamba",
-    "label": "open codestral mamba",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 256000,
-      "maxInputTokens": 256000,
-      "maxOutputTokens": 256000
-    },
-    "cost": {
-      "inputCost": 0.25,
-      "outputCost": 0.25
-    },
-    "metadata": {}
-  },
-  {
-    "name": "codestral-mamba-latest",
-    "label": "codestral mamba latest",
-    "provider": "Mistral",
-    "type": "chat",
-    "modalities": [
-      "tool-choice"
-    ],
-    "context": {
-      "maxTokens": 256000,
-      "maxInputTokens": 256000,
-      "maxOutputTokens": 256000
-    },
-    "cost": {
-      "inputCost": 0.25,
-      "outputCost": 0.25
-    },
-    "metadata": {}
-  },
-  {
-    "name": "mistral-embed",
-    "label": "mistral embed",
-    "provider": "Mistral",
-    "type": "embedding",
-    "modalities": [],
-    "context": {
-      "maxTokens": 8192,
-      "maxInputTokens": 8192
-    },
-    "cost": {
-      "inputCost": 0.1
-    },
-    "metadata": {}
-  }
+	{
+		name: "mistral-tiny",
+		label: "mistral tiny",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 0.25,
+			outputCost: 0.25,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-small",
+		label: "mistral small",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 0.1,
+			outputCost: 0.3,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-small-latest",
+		label: "mistral small latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 0.1,
+			outputCost: 0.3,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-medium",
+		label: "mistral medium",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 2.7,
+			outputCost: 8.1,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-medium-latest",
+		label: "mistral medium latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 2.7,
+			outputCost: 8.1,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-medium-2312",
+		label: "mistral medium 2312",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 2.7,
+			outputCost: 8.1,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-large-latest",
+		label: "mistral large latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 2,
+			outputCost: 6,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-large-2411",
+		label: "mistral large 2411",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 2,
+			outputCost: 6,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-large-2402",
+		label: "mistral large 2402",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 4,
+			outputCost: 12,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-large-2407",
+		label: "mistral large 2407",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 3,
+			outputCost: 9,
+		},
+		metadata: {},
+	},
+	{
+		name: "pixtral-large-latest",
+		label: "pixtral large latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice", "vision"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 2,
+			outputCost: 6,
+		},
+		metadata: {},
+	},
+	{
+		name: "pixtral-large-2411",
+		label: "pixtral large 2411",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice", "vision"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 2,
+			outputCost: 6,
+		},
+		metadata: {},
+	},
+	{
+		name: "pixtral-12b-2409",
+		label: "pixtral 12b 2409",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice", "vision"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 0.15,
+			outputCost: 0.15,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-mistral-7b",
+		label: "open mistral 7b",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 0.25,
+			outputCost: 0.25,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-mixtral-8x7b",
+		label: "open mixtral 8x7b",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 0.7,
+			outputCost: 0.7,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-mixtral-8x22b",
+		label: "open mixtral 8x22b",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["function-call", "tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 65336,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 2,
+			outputCost: 6,
+		},
+		metadata: {},
+	},
+	{
+		name: "codestral-latest",
+		label: "codestral latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 1,
+			outputCost: 3,
+		},
+		metadata: {},
+	},
+	{
+		name: "codestral-2405",
+		label: "codestral 2405",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 8191,
+			maxInputTokens: 32000,
+			maxOutputTokens: 8191,
+		},
+		cost: {
+			inputCost: 1,
+			outputCost: 3,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-mistral-nemo",
+		label: "open mistral nemo",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 0.3,
+			outputCost: 0.3,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-mistral-nemo-2407",
+		label: "open mistral nemo 2407",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 128000,
+			maxInputTokens: 128000,
+			maxOutputTokens: 128000,
+		},
+		cost: {
+			inputCost: 0.3,
+			outputCost: 0.3,
+		},
+		metadata: {},
+	},
+	{
+		name: "open-codestral-mamba",
+		label: "open codestral mamba",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 256000,
+			maxInputTokens: 256000,
+			maxOutputTokens: 256000,
+		},
+		cost: {
+			inputCost: 0.25,
+			outputCost: 0.25,
+		},
+		metadata: {},
+	},
+	{
+		name: "codestral-mamba-latest",
+		label: "codestral mamba latest",
+		provider: "Mistral",
+		type: "chat",
+		modalities: ["tool-choice"],
+		context: {
+			maxTokens: 256000,
+			maxInputTokens: 256000,
+			maxOutputTokens: 256000,
+		},
+		cost: {
+			inputCost: 0.25,
+			outputCost: 0.25,
+		},
+		metadata: {},
+	},
+	{
+		name: "mistral-embed",
+		label: "mistral embed",
+		provider: "Mistral",
+		type: "embedding",
+		modalities: [],
+		context: {
+			maxTokens: 8192,
+			maxInputTokens: 8192,
+		},
+		cost: {
+			inputCost: 0.1,
+		},
+		metadata: {},
+	},
 ];
 
 export default models;

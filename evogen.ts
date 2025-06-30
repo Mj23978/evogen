@@ -1,8 +1,9 @@
 import {
-  BaseEvogenProvider,
-  BaseEvogenStorage,
+  type BaseEvogenProvider,
+  type BaseEvogenStorage,
   EvogenError,
-  ProviderInfo,
+  type ModelInfo,
+  type ProviderInfo,
 } from "./core";
 import {
   AmazonBedrockProvider,
@@ -29,24 +30,23 @@ import {
   OpenRouterProvider,
   parseOpenRouterConfig,
 } from "./providers/open-router";
-import { OpenAIProvider, parseOpenAIConfig } from "./providers/openai";
 import {
   OpenAICompatibleProvider,
   parseOpenAICompatibleConfig,
 } from "./providers/openai-compatible";
 import {
-  PerplexityProvider,
   parsePerplexityConfig,
+  PerplexityProvider,
 } from "./providers/perplexity";
 import {
-  TogetherAIProvider,
   parseTogetherAIConfig,
+  TogetherAIProvider,
 } from "./providers/together";
-import { XaiProvider, parseXaiConfig } from "./providers/xai";
-
+import { parseXaiConfig, XaiProvider } from "./providers/xai";
 
 export class EvoGen {
   strategies: Map<string, BaseEvogenStorage<{}>>;
+  private _modelList: ModelInfo[] = [];
 
   constructor(strategies: Map<string, BaseEvogenStorage<{}>>) {
     if (strategies.size === 0) throw new EvogenError("No strategies provided");
@@ -58,8 +58,10 @@ export class EvoGen {
     if (storage) {
       return storage;
     }
-    throw new EvogenError("No storage strategy found for the given strategy");
+    throw new EvogenError(`No storage strategy found for '${strategy}'`);
   }
+
+  // --- ASYNC METHODS ---
 
   async getProviderApiKey(
     info: ProviderInfo,
@@ -80,12 +82,208 @@ export class EvoGen {
     throw new EvogenError("No API key found for the given provider");
   }
 
-  async getProviderByType(
-    info: ProviderInfo,
+  async getProviderConfigs(
+    name: string,
     strategy: string,
+    metadata?: Record<string, any>
+  ): Promise<Record<string, any>> {
+    const storage = this.getStorage(strategy);
+    const provider = await storage.getProvider({
+      providerName: name,
+      ...metadata,
+    });
+    return { ...provider.keys, ...provider.metadata };
+  }
+
+  async getProvider(
+    name: string,
+    strategy: string,
+    config?: Record<string, any>,
     metadata?: Record<string, any>
   ): Promise<BaseEvogenProvider<any>> {
     const storage = this.getStorage(strategy);
+    const providerInfo = await storage.getProvider({
+      providerName: name,
+      ...metadata,
+    });
+    providerInfo.config = {
+      ...providerInfo.keys,
+      ...providerInfo.metadata,
+      ...providerInfo.config,
+      ...config,
+    };
+    return this.getProviderByType(providerInfo, storage);
+  }
+
+  /**
+   * Fetches model lists from all available providers for a given strategy,
+   * updates the internal cache, and returns the combined list.
+   * @param strategy The storage strategy to use.
+   * @param metadata Optional metadata for the storage strategy.
+   * @returns A promise that resolves to an array of ModelInfo objects.
+   */
+  async getModelList(
+    strategy: string,
+    metadata?: Record<string, any>
+  ): Promise<ModelInfo[]> {
+    const storage = this.getStorage(strategy);
+    const providerInfos = await storage.getProviders({ ...metadata });
+
+    const modelPromises = providerInfos.map(async (info) => {
+      try {
+        const models = await storage.getProviderModels({
+          providerName: info.name,
+        });
+        return models;
+      } catch (err) {
+        console.error(
+          `Evogen: Error fetching models for provider ${info.name}:`,
+          err
+        );
+        return [];
+      }
+    });
+
+    const modelLists = await Promise.all(modelPromises);
+    const allModels = modelLists.flat();
+
+    allModels.sort((a, b) => a.name.localeCompare(b.name));
+    this._modelList = allModels;
+
+    return this._modelList;
+  }
+
+  getProviderApiKeySync(
+    info: ProviderInfo,
+    strategy: string,
+    metadata?: Record<string, any>
+  ): string {
+    if (info.config?.apiKey) {
+      return info.config.apiKey;
+    }
+    if (info.keys.apiKeyEnv) {
+      const storage = this.getStorage(strategy);
+      if (!storage.getApiKeySync) {
+        throw new EvogenError(
+          `Storage strategy '${strategy}' does not support synchronous operations.`
+        );
+      }
+      return storage.getApiKeySync({
+        name: info.keys.apiKeyEnv,
+        ...metadata,
+      });
+    }
+    throw new EvogenError("No API key found for the given provider");
+  }
+
+  getProviderConfigsSync(
+    name: string,
+    strategy: string,
+    metadata?: Record<string, any>
+  ): Record<string, any> {
+    const storage = this.getStorage(strategy);
+    if (!storage.getProviderSync) {
+      throw new EvogenError(
+        `Storage strategy '${strategy}' does not support synchronous operations.`
+      );
+    }
+    const provider = storage.getProviderSync({
+      providerName: name,
+      ...metadata,
+    });
+    return { ...provider.keys, ...provider.metadata };
+  }
+
+  getProviderSync(
+    name: string,
+    strategy: string,
+    config?: Record<string, any>,
+    metadata?: Record<string, any>
+  ): BaseEvogenProvider<any> {
+    const storage = this.getStorage(strategy);
+    if (!storage.getProviderSync) {
+      throw new EvogenError(
+        `Storage strategy '${strategy}' does not support synchronous operations.`
+      );
+    }
+    const providerInfo = storage.getProviderSync({
+      providerName: name,
+      ...metadata,
+    });
+    providerInfo.config = {
+      ...providerInfo.keys,
+      ...providerInfo.metadata,
+      ...providerInfo.config,
+      ...config,
+    };
+    return this.getProviderByType(providerInfo, storage);
+  }
+
+  /**
+   * Synchronously fetches model lists from all available providers.
+   * Requires a storage strategy that supports synchronous operations.
+   * @param strategy The storage strategy to use.
+   * @param metadata Optional metadata for the storage strategy.
+   * @returns An array of ModelInfo objects.
+   */
+  getModelListSync(
+    strategy: string,
+    metadata?: Record<string, any>
+  ): ModelInfo[] {
+    const storage = this.getStorage(strategy);
+    if (
+      storage.getProvidersSync === undefined ||
+      storage.getProviderModelsSync === undefined
+    ) {
+      throw new EvogenError(
+        `Storage strategy '${strategy}' does not support synchronous 'getAllProvidersSync'.`
+      );
+    }
+    const providerInfos = storage.getProvidersSync({ ...metadata });
+
+    const modelLists = providerInfos.map((info) => {
+      try {
+        if (
+          storage.getProvidersSync === undefined ||
+          storage.getProviderModelsSync === undefined
+        ) {
+          throw new EvogenError(
+            `Storage strategy '${strategy}' does not support synchronous 'getAllProvidersSync'.`
+          );
+        }
+        const models = storage.getProviderModelsSync({
+          providerName: info.name,
+        });
+        return models;
+      } catch (err) {
+        console.error(
+          `Evogen: Error fetching models for provider ${info.name}:`,
+          err
+        );
+        return [];
+      }
+    });
+
+    const allModels = modelLists.flat();
+
+    allModels.sort((a, b) => a.name.localeCompare(b.name));
+    this._modelList = allModels;
+
+    return this._modelList;
+  }
+
+  // --- UTILITY METHODS ---
+
+  /**
+   * A pure function that returns a provider instance based on its type.
+   * @param info The provider's configuration and type information.
+   * @param storage The storage instance to be passed to the provider.
+   * @returns An instance of a BaseEvogenProvider.
+   */
+  getProviderByType(
+    info: ProviderInfo,
+    storage: BaseEvogenStorage<{}>
+  ): BaseEvogenProvider<any> {
     switch (info.type) {
       case "AmazonBedrock":
         return new AmazonBedrockProvider(
@@ -189,115 +387,12 @@ export class EvoGen {
           parseOpenAICompatibleConfig(info.config ?? {}),
           storage
         );
-      default:
-        throw new EvogenError("Unknown provider type");
+      default: {
+        const exhaustiveCheck = info.type;
+        throw new EvogenError(`Unknown provider type: ${exhaustiveCheck}`);
+      }
     }
   }
-
-  async getProviderConfigs(
-    name: string,
-    strategy: string,
-    metadata?: Record<string, any>
-  ): Promise<Record<string, any>> {
-    const storage = this.getStorage(strategy);
-    const provider = await storage.getProvider({
-      providerName: name,
-      ...metadata,
-    });
-    return { ...provider.keys, ...provider.metadata };
-  }
-
-  async getProvider(
-    name: string,
-    strategy: string,
-    config?: Record<string, any>,
-    metadata?: Record<string, any>
-  ): Promise<BaseEvogenProvider<any>> {
-    const storage = this.getStorage(strategy);
-    const provider = await storage.getProvider({
-      providerName: name,
-      ...metadata,
-    });
-    provider.config = {
-      ...provider.keys,
-      ...provider.metadata,
-      ...provider.config,
-      ...config,
-    };
-    return this.getProviderByType(provider, strategy);
-  }
-
-  // getDefaultProviderChecker(config: any): BaseProviderChecker {
-  //   return new (class extends BaseProviderChecker {
-  //     async checkStatus(): Promise<StatusCheckResult> {
-  //       const endpointStatus = await this.checkEndpoint(this.config.statusUrl);
-  //       const apiStatus = await this.checkEndpoint(this.config.apiUrl);
-
-  //       return {
-  //         status: endpointStatus === 'reachable' && apiStatus === 'reachable' ? 'operational' : 'degraded',
-  //         message: `Status page: ${endpointStatus}, API: ${apiStatus}`,
-  //         incidents: ['Note: Limited status information due to CORS restrictions'],
-  //       };
-  //     }
-  //   })(config);
-  // }
-
-  // async updateModelList(options: {
-  //   apiKeys?: Record<string, string>;
-  //   providerSettings?: Record<string, IProviderSetting>;
-  //   serverEnv?: Record<string, string>;
-  // }): Promise<ModelInfo[]> {
-  //   const { apiKeys, providerSettings, serverEnv } = options;
-
-  //   let enabledProviders = Array.from(this._providers.values()).map((p) => p.name);
-
-  //   if (providerSettings && Object.keys(providerSettings).length > 0) {
-  //     enabledProviders = enabledProviders.filter((p) => providerSettings[p].enabled);
-  //   }
-
-  //   // Get dynamic models from all providers that support them
-  //   const dynamicModels = await Promise.all(
-  //     Array.from(this._providers.values())
-  //       .filter((provider) => enabledProviders.includes(provider.name))
-  //       .filter(
-  //         (provider): provider is BaseProvider & Required<Pick<ProviderInfo, 'getDynamicModels'>> =>
-  //           !!provider.getDynamicModels,
-  //       )
-  //       .map(async (provider) => {
-  //         const cachedModels = provider.getModelsFromCache(options);
-
-  //         if (cachedModels) {
-  //           return cachedModels;
-  //         }
-
-  //         const dynamicModels = await provider
-  //           .getDynamicModels(apiKeys, providerSettings?.[provider.name], serverEnv)
-  //           .then((models) => {
-  //             logger.info(`Caching ${models.length} dynamic models for ${provider.name}`);
-  //             provider.storeDynamicModels(options, models);
-
-  //             return models;
-  //           })
-  //           .catch((err) => {
-  //             logger.error(`Error getting dynamic models ${provider.name} :`, err);
-  //             return [];
-  //           });
-
-  //         return dynamicModels;
-  //       }),
-  //   );
-  //   const staticModels = Array.from(this._providers.values()).flatMap((p) => p.staticModels || []);
-  //   const dynamicModelsFlat = dynamicModels.flat();
-  //   const dynamicModelKeys = dynamicModelsFlat.map((d) => `${d.name}-${d.provider}`);
-  //   const filteredStaticModesl = staticModels.filter((m) => !dynamicModelKeys.includes(`${m.name}-${m.provider}`));
-
-  //   // Combine static and dynamic models
-  //   const modelList = [...dynamicModelsFlat, ...filteredStaticModesl];
-  //   modelList.sort((a, b) => a.name.localeCompare(b.name));
-  //   this._modelList = modelList;
-
-  //   return modelList;
-  // }
 }
 
 export default EvoGen;

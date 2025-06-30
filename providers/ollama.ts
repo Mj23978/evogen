@@ -1,3 +1,4 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
   EmbeddingModelV2,
   ImageModelV2,
@@ -6,18 +7,15 @@ import type {
   SpeechModelV2,
   TranscriptionModelV2,
 } from "@ai-sdk/provider";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 import {
   BaseEvogenProvider,
-  BaseEvogenStorage,
   EvogenNotImplementedError,
-  EvogenProviderError,
-  ModelInfo,
-  ModelsModality,
-  ModelsType,
-  ProviderType,
-  StatusCheckResult,
+  type ModelInfo,
+  type ModelsModality,
+  type ModelsType,
+  type ProviderType,
+  type StatusCheckResult,
 } from "../core";
 
 interface OllamaModelDetails {
@@ -129,10 +127,10 @@ const commonFamilyMaps: Record<
     modalities: ["function-call", "vision"],
   },
 };
-const visionModelNames = ["llava", "moondream", "minicpm-v"];
+// const visionModelNames = ["llava", "moondream", "minicpm-v"];
 
 interface OllamaConfig {
-  baseUrl: string;
+  baseURL: string;
   isDocker?: boolean;
 }
 
@@ -148,20 +146,20 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   }
 
   getBaseUrl(metadata?: Record<string, any>): string {
-    let baseUrl = this.config.baseUrl;
+    let baseURL = this.config.baseURL;
     if (this.config.isDocker) {
-      baseUrl = baseUrl
+      baseURL = baseURL
         .replace("localhost", "host.docker.internal")
         .replace("127.0.0.1", "host.docker.internal");
     }
-    return baseUrl;
+    return baseURL;
   }
 
   async syncModelsFromServer(
     metadata?: Record<string, any>
   ): Promise<ModelInfo[]> {
-    let baseUrl = this.getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/tags`);
+    const baseURL = this.getBaseUrl();
+    const response = await fetch(`${baseURL}/api/tags`);
     const data = (await response.json()) as OllamaApiResponse;
 
     const models = data.models.map<ModelInfo>((model: OllamaModel) => {
@@ -235,7 +233,9 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
     metadata?: Record<string, any>
   ): Promise<EmbeddingModelV2<string>> {
     const ollama = this.createProvider();
-    const ollamaInstance = ollama.textEmbeddingModel(model.name) as EmbeddingModelV2<string> & { config: any };
+    const ollamaInstance = ollama.textEmbeddingModel(
+      model.name
+    ) as EmbeddingModelV2<string> & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -280,10 +280,10 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
 }
 
 export function parseOllamaConfig(config: Record<string, any>): OllamaConfig {
-  const { baseUrl, isDocker } = config;
+  const { baseURL, isDocker } = config;
 
   return {
-    baseUrl: baseUrl ?? "http://localhost:11434",
+    baseURL: baseURL ?? "http://localhost:11434",
     isDocker,
   };
 }
