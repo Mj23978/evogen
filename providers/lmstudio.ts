@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-  EmbeddingModelV2,
-  ImageModelV2,
-  LanguageModelV2,
-  ProviderV2,
-  SpeechModelV2,
-  TranscriptionModelV2,
+  EmbeddingModelV1,
+  ImageModelV1,
+  LanguageModelV1,
+  ProviderV1,
+  SpeechModelV1,
+  TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -45,7 +45,7 @@ interface LMStudioConfig {
 export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   type: ProviderType = "LMStudio";
 
-  createProvider(): ProviderV2 {
+  createProvider(): ProviderV1 {
     return createOpenAICompatible({
       name: this.name,
       apiKey: "",
@@ -75,11 +75,11 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _chatModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV2> {
+  ): Promise<LanguageModelV1> {
     const lmstudio = this.createProvider();
     const lmstudioInstance = lmstudio.languageModel(
       model.name
-    ) as LanguageModelV2 & { config: any };
+    ) as LanguageModelV1 & { config: any };
 
     lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -89,11 +89,11 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV2> {
+  ): Promise<LanguageModelV1> {
     const lmstudio = this.createProvider();
     const lmstudioInstance = lmstudio.languageModel(
       model.name
-    ) as LanguageModelV2 & { config: any };
+    ) as LanguageModelV1 & { config: any };
 
     lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -103,7 +103,7 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _imageModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<ImageModelV2> {
+  ): Promise<ImageModelV1> {
     throw new EvogenNotImplementedError(
       "Audio models are not supported by LMStudio."
     );
@@ -112,11 +112,11 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV2<string>> {
+  ): Promise<EmbeddingModelV1<string>> {
     const lmstudio = this.createProvider();
     const lmstudioInstance = lmstudio.textEmbeddingModel(
       model.name
-    ) as EmbeddingModelV2<string> & { config: any };
+    ) as EmbeddingModelV1<string> & { config: any };
 
     lmstudioInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -126,7 +126,7 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _speachToTextModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<SpeechModelV2> {
+  ): Promise<SpeechModelV1> {
     throw new EvogenNotImplementedError(
       "Speach models are not supported by LMStudio."
     );
@@ -135,7 +135,7 @@ export class LMStudioProvider extends BaseEvogenProvider<LMStudioConfig> {
   async _textToSpeachModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<TranscriptionModelV2> {
+  ): Promise<TranscriptionModelV1> {
     throw new EvogenNotImplementedError(
       "TTS models are not supported by LMStudio."
     );

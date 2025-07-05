@@ -3,12 +3,12 @@ import {
 	createAmazonBedrock,
 } from "@ai-sdk/amazon-bedrock";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -38,7 +38,7 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	type: ProviderType = "AmazonBedrock";
 	getModelsLink = "https://api.bedrock.ai/v1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return createAmazonBedrock(this.config);
 	}
 
@@ -54,7 +54,7 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const bedrock = this.createProvider();
 		const bedrockInstance = bedrock.languageModel(model.name);
 		return bedrockInstance;
@@ -63,7 +63,7 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const bedrock = this.createProvider();
 		const bedrockInstance = bedrock.languageModel(model.name);
 		return bedrockInstance;
@@ -72,16 +72,21 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
+	): Promise<ImageModelV1> {
 		const bedrock = this.createProvider();
-		const bedrockInstance = bedrock.imageModel(model.name);
+		const bedrockInstance = bedrock.imageModel?.(model.name);
+		if (!bedrockInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
 		return bedrockInstance;
 	}
 
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
+	): Promise<EmbeddingModelV1<string>> {
 		const bedrock = this.createProvider();
 		const bedrockInstance = bedrock.textEmbeddingModel(model.name);
 		return bedrockInstance;
@@ -90,12 +95,12 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
+	): Promise<SpeechModelV1> {
 		const bedrock = this.createProvider();
 		const bedrockInstance = bedrock.speechModel?.(model.name);
 		if (!bedrockInstance) {
 			throw new EvogenNotImplementedError(
-				"TTS models are not supported by AmazonBedrock.",
+				"STT models are not supported by AmazonBedrock.",
 			);
 		}
 		return bedrockInstance;
@@ -104,7 +109,7 @@ export class AmazonBedrockProvider extends BaseEvogenProvider<AmazonBedrockProvi
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
+	): Promise<TranscriptionModelV1> {
 		const bedrock = this.createProvider();
 		const bedrockInstance = bedrock.transcriptionModel?.(model.name);
 		if (!bedrockInstance) {

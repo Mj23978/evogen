@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -25,7 +25,7 @@ type OpenAICompatibleProviderSettings = {
 export class OpenAICompatibleProvider extends BaseEvogenProvider<OpenAICompatibleProviderSettings> {
 	type: ProviderType = "OpenAILike";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return createOpenAICompatible(this.config);
 	}
 
@@ -41,65 +41,70 @@ export class OpenAICompatibleProvider extends BaseEvogenProvider<OpenAICompatibl
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.languageModel(model.name);
-		return deepseekInstance;
+	): Promise<LanguageModelV1> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.languageModel(model.name);
+		return oaicompInstance;
 	}
 
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.languageModel(model.name);
-		return deepseekInstance;
+	): Promise<LanguageModelV1> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.languageModel(model.name);
+		return oaicompInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.imageModel(model.name);
-		return deepseekInstance;
+	): Promise<ImageModelV1> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.imageModel?.(model.name);
+		if (!oaicompInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
+		return oaicompInstance;
 	}
 
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.textEmbeddingModel(model.name);
-		return deepseekInstance;
+	): Promise<EmbeddingModelV1<string>> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.textEmbeddingModel(model.name);
+		return oaicompInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.speechModel?.(model.name);
-		if (!deepseekInstance) {
+	): Promise<SpeechModelV1> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.speechModel?.(model.name);
+		if (!oaicompInstance) {
 			throw new EvogenNotImplementedError(
 				"TTS models are not supported by OpenAICompatible.",
 			);
 		}
-		return deepseekInstance;
+		return oaicompInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
-		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.transcriptionModel?.(model.name);
-		if (!deepseekInstance) {
+	): Promise<TranscriptionModelV1> {
+		const oaicomp = this.createProvider();
+		const oaicompInstance = oaicomp.transcriptionModel?.(model.name);
+		if (!oaicompInstance) {
 			throw new EvogenNotImplementedError(
 				"TTS models are not supported by OpenAICompatible.",
 			);
 		}
-		return deepseekInstance;
+		return oaicompInstance;
 	}
 
 	async checkStatus(

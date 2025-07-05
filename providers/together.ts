@@ -1,10 +1,10 @@
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 import {
 	type TogetherAIProviderSettings,
@@ -40,7 +40,7 @@ export class TogetherAIProvider extends BaseEvogenProvider<TogetherAIProviderSet
 	type: ProviderType = "Together";
 	getModelsLink = "https://api.together.xyz/v1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return togetherai;
 	}
 
@@ -114,7 +114,7 @@ export class TogetherAIProvider extends BaseEvogenProvider<TogetherAIProviderSet
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const togetheraiInstance = togetherai.languageModel(model.name);
 		return togetheraiInstance;
 	}
@@ -122,45 +122,62 @@ export class TogetherAIProvider extends BaseEvogenProvider<TogetherAIProviderSet
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const togetheraiInstance = togetherai(model.name);
+		return togetheraiInstance;
+	}
+
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV1<string>> {
+		const togetheraiInstance = togetherai.textEmbeddingModel(model.name);
 		return togetheraiInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
-		throw new EvogenNotImplementedError(
-			"Audio models are not supported by TogetherAI.",
-		);
-	}
+	): Promise<ImageModelV1> {
+		const together = this.createProvider();
+		const togetherInstance = together.imageModel?.(model.name);
+		if (!togetherInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
 
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
-		const togetheraiInstance = togetherai.textEmbeddingModel(model.name);
-		return togetheraiInstance;
+		return togetherInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
-		throw new EvogenNotImplementedError(
-			"Speach models are not supported by TogetherAI.",
-		);
+	): Promise<SpeechModelV1> {
+		const together = this.createProvider();
+		const togetherInstance = together.speechModel?.(model.name);
+		if (!togetherInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by together.",
+			);
+		}
+		return togetherInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
-		throw new EvogenNotImplementedError(
-			"TTS models are not supported by TogetherAI.",
-		);
+	): Promise<TranscriptionModelV1> {
+		const together = this.createProvider();
+		const togetherInstance = together.transcriptionModel?.(model.name);
+		if (!togetherInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by together.",
+			);
+		}
+		return togetherInstance;
 	}
+
 
 	async checkStatus(
 		metadata?: Record<string, any>,

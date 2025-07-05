@@ -1,11 +1,11 @@
 import { type GroqProviderSettings, groq } from "@ai-sdk/groq";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -39,7 +39,7 @@ export class GroqProvider extends BaseEvogenProvider<GroqProviderSettings> {
 	type: ProviderType = "Groq";
 	getModelsLink = "https://api.groq.com/v1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return groq;
 	}
 
@@ -100,7 +100,7 @@ export class GroqProvider extends BaseEvogenProvider<GroqProviderSettings> {
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const groqInstance = groq.languageModel(model.name);
 		return groqInstance;
 	}
@@ -108,45 +108,63 @@ export class GroqProvider extends BaseEvogenProvider<GroqProviderSettings> {
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const groqInstance = groq(model.name);
+		return groqInstance;
+	}
+
+
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV1<string>> {
+		const groqInstance = groq.textEmbeddingModel(model.name);
 		return groqInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
-		throw new EvogenNotImplementedError(
-			"Audio models are not supported by Groq.",
-		);
-	}
+	): Promise<ImageModelV1> {
+		const groq = this.createProvider();
+		const groqInstance = groq.imageModel?.(model.name);
+		if (!groqInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
 
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
-		const groqInstance = groq.textEmbeddingModel(model.name);
 		return groqInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
-		throw new EvogenNotImplementedError(
-			"Speach models are not supported by Groq.",
-		);
+	): Promise<SpeechModelV1> {
+		const groq = this.createProvider();
+		const groqInstance = groq.speechModel?.(model.name);
+		if (!groqInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by groq.",
+			);
+		}
+		return groqInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
-		throw new EvogenNotImplementedError(
-			"TTS models are not supported by Groq.",
-		);
+	): Promise<TranscriptionModelV1> {
+		const groq = this.createProvider();
+		const groqInstance = groq.transcriptionModel?.(model.name);
+		if (!groqInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by groq.",
+			);
+		}
+		return groqInstance;
 	}
+
 
 	async checkStatus(
 		metadata?: Record<string, any>,

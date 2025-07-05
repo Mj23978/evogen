@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -67,7 +67,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	type: ProviderType = "OpenRouter";
 	getModelsLink = "https://openrouter.ai/api/v1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return createOpenAICompatible({
 			name: this.name,
 			baseURL: this.config.baseURL,
@@ -152,7 +152,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const huggingface = this.createProvider();
 		const huggingfaceInstance = huggingface.languageModel(model.name);
 		return huggingfaceInstance;
@@ -161,7 +161,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const huggingface = this.createProvider();
 		const huggingfaceInstance = huggingface.languageModel(model.name);
 		return huggingfaceInstance;
@@ -170,7 +170,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
+	): Promise<ImageModelV1> {
 		throw new EvogenNotImplementedError(
 			"Audio models are not supported by OpenRouter.",
 		);
@@ -179,7 +179,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
+	): Promise<EmbeddingModelV1<string>> {
 		const huggingface = this.createProvider();
 		const huggingfaceInstance = huggingface.textEmbeddingModel(model.name);
 		return huggingfaceInstance;
@@ -188,7 +188,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
+	): Promise<SpeechModelV1> {
 		throw new EvogenNotImplementedError(
 			"Speach models are not supported by OpenRouter.",
 		);
@@ -197,7 +197,7 @@ export class OpenRouterProvider extends BaseEvogenProvider<OpenRouterProviderSet
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
+	): Promise<TranscriptionModelV1> {
 		throw new EvogenNotImplementedError(
 			"TTS models are not supported by OpenRouter.",
 		);

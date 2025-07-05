@@ -3,12 +3,12 @@ import {
 	google,
 } from "@ai-sdk/google";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -40,7 +40,7 @@ export class GoogleProvider extends BaseEvogenProvider<GoogleGenerativeAIProvide
 	type: ProviderType = "Google";
 	getModelsLink = "https://generativelanguage.googleapis.com/v1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return google;
 	}
 
@@ -114,7 +114,7 @@ export class GoogleProvider extends BaseEvogenProvider<GoogleGenerativeAIProvide
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const googleInstance = google.languageModel(model.name);
 		return googleInstance;
 	}
@@ -122,7 +122,7 @@ export class GoogleProvider extends BaseEvogenProvider<GoogleGenerativeAIProvide
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const googleInstance = google(model.name);
 		return googleInstance;
 	}
@@ -130,16 +130,22 @@ export class GoogleProvider extends BaseEvogenProvider<GoogleGenerativeAIProvide
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
-		throw new EvogenNotImplementedError(
-			"Audio models are not supported by Google.",
-		);
+	): Promise<ImageModelV1> {
+		const google = this.createProvider();
+		const googleInstance = google.imageModel?.(model.name);
+		if (!googleInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
+
+		return googleInstance;
 	}
 
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
+	): Promise<EmbeddingModelV1<string>> {
 		const googleInstance = google.textEmbeddingModel(model.name);
 		return googleInstance;
 	}
@@ -147,20 +153,31 @@ export class GoogleProvider extends BaseEvogenProvider<GoogleGenerativeAIProvide
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
-		throw new EvogenNotImplementedError(
-			"Speach models are not supported by Google.",
-		);
+	): Promise<SpeechModelV1> {
+		const google = this.createProvider();
+		const googleInstance = google.speechModel?.(model.name);
+		if (!googleInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by google.",
+			);
+		}
+		return googleInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
-		throw new EvogenNotImplementedError(
-			"TTS models are not supported by Google.",
-		);
+	): Promise<TranscriptionModelV1> {
+		const google = this.createProvider();
+		const googleInstance = google.transcriptionModel?.(model.name);
+		if (!googleInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by google.",
+			);
+		}
+		return googleInstance;
 	}
+
 
 	async checkStatus(
 		metadata?: Record<string, any>,
