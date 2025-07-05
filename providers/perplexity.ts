@@ -3,12 +3,12 @@ import {
 	perplexity,
 } from "@ai-sdk/perplexity";
 import type {
-	EmbeddingModelV2,
-	ImageModelV2,
-	LanguageModelV2,
-	ProviderV2,
-	SpeechModelV2,
-	TranscriptionModelV2,
+	EmbeddingModelV1,
+	ImageModelV1,
+	LanguageModelV1,
+	ProviderV1,
+	SpeechModelV1,
+	TranscriptionModelV1,
 } from "@ai-sdk/provider";
 
 import {
@@ -38,9 +38,9 @@ type PerplexityApiResponse = {
 
 export class PerplexityProvider extends BaseEvogenProvider<PerplexityProviderSettings> {
 	type: ProviderType = "Perplexity";
-	getModelsLink = "https://api.perplexity.com/v1/models";
+	getModelsLink = "https://api.perplexity.com/V1/models";
 
-	createProvider(): ProviderV2 {
+	createProvider(): ProviderV1 {
 		return perplexity;
 	}
 
@@ -114,7 +114,7 @@ export class PerplexityProvider extends BaseEvogenProvider<PerplexityProviderSet
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const perplexityInstance = perplexity.languageModel(model.name);
 		return perplexityInstance;
 	}
@@ -122,45 +122,62 @@ export class PerplexityProvider extends BaseEvogenProvider<PerplexityProviderSet
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV2> {
+	): Promise<LanguageModelV1> {
 		const perplexityInstance = perplexity(model.name);
+		return perplexityInstance;
+	}
+
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV1<string>> {
+		const perplexityInstance = perplexity.textEmbeddingModel(model.name);
 		return perplexityInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV2> {
-		throw new EvogenNotImplementedError(
-			"Audio models are not supported by Perplexity.",
-		);
-	}
+	): Promise<ImageModelV1> {
+		const perplexity = this.createProvider();
+		const perplexityInstance = perplexity.imageModel?.(model.name);
+		if (!perplexityInstance) {
+			throw new EvogenNotImplementedError(
+				"Image models are not supported.",
+			);
+		}
 
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV2<string>> {
-		const perplexityInstance = perplexity.textEmbeddingModel(model.name);
 		return perplexityInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV2> {
-		throw new EvogenNotImplementedError(
-			"Speach models are not supported by Perplexity.",
-		);
+	): Promise<SpeechModelV1> {
+		const perplexity = this.createProvider();
+		const perplexityInstance = perplexity.speechModel?.(model.name);
+		if (!perplexityInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by perplexity.",
+			);
+		}
+		return perplexityInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV2> {
-		throw new EvogenNotImplementedError(
-			"TTS models are not supported by Perplexity.",
-		);
+	): Promise<TranscriptionModelV1> {
+		const perplexity = this.createProvider();
+		const perplexityInstance = perplexity.transcriptionModel?.(model.name);
+		if (!perplexityInstance) {
+			throw new EvogenNotImplementedError(
+				"TTS models are not supported by perplexity.",
+			);
+		}
+		return perplexityInstance;
 	}
+
 
 	async checkStatus(
 		metadata?: Record<string, any>,
