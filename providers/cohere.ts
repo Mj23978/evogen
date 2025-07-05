@@ -1,11 +1,11 @@
 import { type CohereProviderSettings, cohere } from "@ai-sdk/cohere";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -38,7 +38,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	type: ProviderType = "Cohere";
 	getModelsLink = "https://api.cohere.ai/v1/models";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return cohere;
 	}
 
@@ -112,7 +112,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const cohereInstance = cohere.languageModel(model.name);
 		return cohereInstance;
 	}
@@ -120,7 +120,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const cohereInstance = cohere(model.name);
 		return cohereInstance;
 	}
@@ -128,7 +128,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
+	): Promise<ImageModelV2> {
 		throw new EvogenNotImplementedError(
 			"Audio models are not supported by Cohere.",
 		);
@@ -137,7 +137,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
+	): Promise<EmbeddingModelV2<string>> {
 		const cohereInstance = cohere.textEmbeddingModel(model.name);
 		return cohereInstance;
 	}
@@ -145,7 +145,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
+	): Promise<SpeechModelV2> {
 		throw new EvogenNotImplementedError(
 			"Speach models are not supported by Cohere.",
 		);
@@ -154,7 +154,7 @@ export class CohereProvider extends BaseEvogenProvider<CohereProviderSettings> {
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
+	): Promise<TranscriptionModelV2> {
 		throw new EvogenNotImplementedError(
 			"TTS models are not supported by Cohere.",
 		);

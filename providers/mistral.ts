@@ -1,11 +1,11 @@
 import { type MistralProviderSettings, mistral } from "@ai-sdk/mistral";
 import type {
-  EmbeddingModelV1,
-  ImageModelV1,
-  LanguageModelV1,
-  ProviderV1,
-  SpeechModelV1,
-  TranscriptionModelV1,
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -50,7 +50,7 @@ export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings>
   type: ProviderType = "Mistral";
   getModelsLink = "https://api.mistral.ai/v1/models";
 
-  createProvider(): ProviderV1 {
+  createProvider(): ProviderV2 {
     return mistral;
   }
 
@@ -119,7 +119,7 @@ export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings>
   async _chatModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const mistralInstance = mistral.languageModel(model.name);
     return mistralInstance;
   }
@@ -127,62 +127,45 @@ export class MistralProvider extends BaseEvogenProvider<MistralProviderSettings>
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const mistralInstance = mistral(model.name);
     return mistralInstance;
+  }
+
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by Mistral."
+    );
   }
 
   async _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV1<string>> {
+  ): Promise<EmbeddingModelV2<string>> {
     const mistralInstance = mistral.textEmbeddingModel(model.name);
     return mistralInstance;
   }
 
-	async _imageModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
-		const mistral = this.createProvider();
-		const mistralInstance = mistral.imageModel?.(model.name);
-		if (!mistralInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by Mistral."
+    );
+  }
 
-		return mistralInstance;
-	}
-
-	async _speachToTextModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
-		const mistral = this.createProvider();
-		const mistralInstance = mistral.speechModel?.(model.name);
-		if (!mistralInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by mistral.",
-			);
-		}
-		return mistralInstance;
-	}
-
-	async _textToSpeachModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
-		const mistral = this.createProvider();
-		const mistralInstance = mistral.transcriptionModel?.(model.name);
-		if (!mistralInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by mistral.",
-			);
-		}
-		return mistralInstance;
-	}
-
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by Mistral."
+    );
+  }
 
   async checkStatus(
     metadata?: Record<string, any>

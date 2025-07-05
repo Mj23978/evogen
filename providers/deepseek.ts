@@ -3,12 +3,12 @@ import {
 	type DeepSeekProviderSettings,
 } from "@ai-sdk/deepseek";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -38,7 +38,7 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	type: ProviderType = "Deepseek";
 	getModelsLink = "https://api.deepseek.com/v1/models";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return createDeepSeek(this.config);
 	}
 
@@ -54,7 +54,7 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const deepseek = this.createProvider();
 		const deepseekInstance = deepseek.languageModel(model.name);
 		return deepseekInstance;
@@ -63,7 +63,7 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const deepseek = this.createProvider();
 		const deepseekInstance = deepseek.languageModel(model.name);
 		return deepseekInstance;
@@ -72,22 +72,16 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
+	): Promise<ImageModelV2> {
 		const deepseek = this.createProvider();
-		const deepseekInstance = deepseek.imageModel?.(model.name);
-		if (!deepseekInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
-
+		const deepseekInstance = deepseek.imageModel(model.name);
 		return deepseekInstance;
 	}
 
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
+	): Promise<EmbeddingModelV2<string>> {
 		const deepseek = this.createProvider();
 		const deepseekInstance = deepseek.textEmbeddingModel(model.name);
 		return deepseekInstance;
@@ -96,7 +90,7 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
+	): Promise<SpeechModelV2> {
 		const deepseek = this.createProvider();
 		const deepseekInstance = deepseek.speechModel?.(model.name);
 		if (!deepseekInstance) {
@@ -110,7 +104,7 @@ export class DeepSeekProvider extends BaseEvogenProvider<DeepSeekProviderSetting
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
+	): Promise<TranscriptionModelV2> {
 		const deepseek = this.createProvider();
 		const deepseekInstance = deepseek.transcriptionModel?.(model.name);
 		if (!deepseekInstance) {

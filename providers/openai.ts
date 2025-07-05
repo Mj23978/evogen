@@ -1,11 +1,11 @@
 import { type OpenAIProviderSettings, openai } from "@ai-sdk/openai";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -37,7 +37,7 @@ export class OpenAIProvider extends BaseEvogenProvider<OpenAIProviderSettings> {
 	type: ProviderType = "OpenAI";
 	getModelsLink = "https://api.openai.com/v1/models";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return openai;
 	}
 
@@ -111,7 +111,7 @@ export class OpenAIProvider extends BaseEvogenProvider<OpenAIProviderSettings> {
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const openaiInstance = openai.languageModel(model.name);
 		return openaiInstance;
 	}
@@ -119,62 +119,45 @@ export class OpenAIProvider extends BaseEvogenProvider<OpenAIProviderSettings> {
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const openaiInstance = openai(model.name);
-		return openaiInstance;
-	}
-
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
-		const openaiInstance = openai.textEmbeddingModel(model.name);
 		return openaiInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
-		const openai = this.createProvider();
-		const openaiInstance = openai.imageModel?.(model.name);
-		if (!openaiInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
+	): Promise<ImageModelV2> {
+		throw new EvogenNotImplementedError(
+			"Audio models are not supported by OpenAI.",
+		);
+	}
 
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV2<string>> {
+		const openaiInstance = openai.textEmbeddingModel(model.name);
 		return openaiInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
-		const openai = this.createProvider();
-		const openaiInstance = openai.speechModel?.(model.name);
-		if (!openaiInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by openai.",
-			);
-		}
-		return openaiInstance;
+	): Promise<SpeechModelV2> {
+		throw new EvogenNotImplementedError(
+			"Speach models are not supported by OpenAI.",
+		);
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
-		const openai = this.createProvider();
-		const openaiInstance = openai.transcriptionModel?.(model.name);
-		if (!openaiInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by openai.",
-			);
-		}
-		return openaiInstance;
+	): Promise<TranscriptionModelV2> {
+		throw new EvogenNotImplementedError(
+			"TTS models are not supported by OpenAI.",
+		);
 	}
-
 
 	async checkStatus(
 		metadata?: Record<string, any>,

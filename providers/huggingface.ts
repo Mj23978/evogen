@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-  EmbeddingModelV1,
-  ImageModelV1,
-  LanguageModelV1,
-  ProviderV1,
-  SpeechModelV1,
-  TranscriptionModelV1,
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -43,7 +43,7 @@ export class HuggingFaceProvider extends BaseEvogenProvider<HuggingFaceProviderS
   type: ProviderType = "HuggingFace";
   getModelsLink = "https://api.huggingface.com/v1/models";
 
-  createProvider(): ProviderV1 {
+  createProvider(): ProviderV2 {
     return createOpenAICompatible({
       name: this.name,
       baseURL: this.config.baseURL,
@@ -132,7 +132,7 @@ export class HuggingFaceProvider extends BaseEvogenProvider<HuggingFaceProviderS
   async _chatModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const huggingface = this.createProvider();
     const huggingfaceInstance = huggingface.languageModel(model.name);
     return huggingfaceInstance;
@@ -141,64 +141,47 @@ export class HuggingFaceProvider extends BaseEvogenProvider<HuggingFaceProviderS
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const huggingface = this.createProvider();
     const huggingfaceInstance = huggingface.languageModel(model.name);
     return huggingfaceInstance;
   }
 
+  async _imageModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<ImageModelV2> {
+    throw new EvogenNotImplementedError(
+      "Audio models are not supported by HuggingFace."
+    );
+  }
+
   async _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV1<string>> {
+  ): Promise<EmbeddingModelV2<string>> {
     const huggingface = this.createProvider();
     const huggingfaceInstance = huggingface.textEmbeddingModel(model.name);
     return huggingfaceInstance;
   }
 
-	async _imageModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
-		const huggingface = this.createProvider();
-		const huggingfaceInstance = huggingface.imageModel?.(model.name);
-		if (!huggingfaceInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
+  async _speachToTextModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<SpeechModelV2> {
+    throw new EvogenNotImplementedError(
+      "Speach models are not supported by HuggingFace."
+    );
+  }
 
-		return huggingfaceInstance;
-	}
-
-	async _speachToTextModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
-		const huggingface = this.createProvider();
-		const huggingfaceInstance = huggingface.speechModel?.(model.name);
-		if (!huggingfaceInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by huggingface.",
-			);
-		}
-		return huggingfaceInstance;
-	}
-
-	async _textToSpeachModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
-		const huggingface = this.createProvider();
-		const huggingfaceInstance = huggingface.transcriptionModel?.(model.name);
-		if (!huggingfaceInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by huggingface.",
-			);
-		}
-		return huggingfaceInstance;
-	}
-
+  async _textToSpeachModel(
+    model: ModelInfo,
+    metadata?: Record<string, any>
+  ): Promise<TranscriptionModelV2> {
+    throw new EvogenNotImplementedError(
+      "TTS models are not supported by HuggingFace."
+    );
+  }
 
   async checkStatus(
     metadata?: Record<string, any>

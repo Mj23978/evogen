@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -45,7 +45,7 @@ export class HyperbolicProvider extends BaseEvogenProvider<HyperbolicProviderSet
 	type: ProviderType = "Hyperbolic";
 	getModelsLink = "https://api.huggingface.com/v1/models";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return createOpenAICompatible({
 			name: this.name,
 			baseURL: this.config.baseURL,
@@ -127,7 +127,7 @@ export class HyperbolicProvider extends BaseEvogenProvider<HyperbolicProviderSet
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const huggingface = this.createProvider();
 		const huggingfaceInstance = huggingface.languageModel(model.name);
 		return huggingfaceInstance;
@@ -136,64 +136,47 @@ export class HyperbolicProvider extends BaseEvogenProvider<HyperbolicProviderSet
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const huggingface = this.createProvider();
 		const huggingfaceInstance = huggingface.languageModel(model.name);
-		return huggingfaceInstance;
-	}
-
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
-		const huggingface = this.createProvider();
-		const huggingfaceInstance = huggingface.textEmbeddingModel(model.name);
 		return huggingfaceInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
-		const hyperbolic = this.createProvider();
-		const hyperbolicInstance = hyperbolic.imageModel?.(model.name);
-		if (!hyperbolicInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
+	): Promise<ImageModelV2> {
+		throw new EvogenNotImplementedError(
+			"Audio models are not supported by Hyperbolic.",
+		);
+	}
 
-		return hyperbolicInstance;
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV2<string>> {
+		const huggingface = this.createProvider();
+		const huggingfaceInstance = huggingface.textEmbeddingModel(model.name);
+		return huggingfaceInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
-		const hyperbolic = this.createProvider();
-		const hyperbolicInstance = hyperbolic.speechModel?.(model.name);
-		if (!hyperbolicInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by hyperbolic.",
-			);
-		}
-		return hyperbolicInstance;
+	): Promise<SpeechModelV2> {
+		throw new EvogenNotImplementedError(
+			"Speach models are not supported by Hyperbolic.",
+		);
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
-		const hyperbolic = this.createProvider();
-		const hyperbolicInstance = hyperbolic.transcriptionModel?.(model.name);
-		if (!hyperbolicInstance) {
-			throw new EvogenNotImplementedError(
-				"TTS models are not supported by hyperbolic.",
-			);
-		}
-		return hyperbolicInstance;
+	): Promise<TranscriptionModelV2> {
+		throw new EvogenNotImplementedError(
+			"TTS models are not supported by Hyperbolic.",
+		);
 	}
-
 
 	async checkStatus(
 		metadata?: Record<string, any>,

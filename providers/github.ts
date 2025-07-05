@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -25,7 +25,7 @@ type GithubProviderSettings = {
 export class GithubProvider extends BaseEvogenProvider<GithubProviderSettings> {
 	type: ProviderType = "OpenAILike";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return createOpenAICompatible(this.config);
 	}
 
@@ -41,71 +41,65 @@ export class GithubProvider extends BaseEvogenProvider<GithubProviderSettings> {
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
-		const github = this.createProvider();
-		const githubInstance = github.languageModel(model.name);
-		return githubInstance;
+	): Promise<LanguageModelV2> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.languageModel(model.name);
+		return deepseekInstance;
 	}
 
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
-		const github = this.createProvider();
-		const githubInstance = github.languageModel(model.name);
-		return githubInstance;
-	}
-
-	async _embeddingModel(
-		model: ModelInfo,
-		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
-		const github = this.createProvider();
-		const githubInstance = github.textEmbeddingModel(model.name);
-		return githubInstance;
+	): Promise<LanguageModelV2> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.languageModel(model.name);
+		return deepseekInstance;
 	}
 
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
-		const github = this.createProvider();
-		const githubInstance = github.imageModel?.(model.name);
-		if (!githubInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
+	): Promise<ImageModelV2> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.imageModel(model.name);
+		return deepseekInstance;
+	}
 
-		return githubInstance;
+	async _embeddingModel(
+		model: ModelInfo,
+		metadata?: Record<string, any>,
+	): Promise<EmbeddingModelV2<string>> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.textEmbeddingModel(model.name);
+		return deepseekInstance;
 	}
 
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
-		const github = this.createProvider();
-		const githubInstance = github.speechModel?.(model.name);
-		if (!githubInstance) {
+	): Promise<SpeechModelV2> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.speechModel?.(model.name);
+		if (!deepseekInstance) {
 			throw new EvogenNotImplementedError(
 				"TTS models are not supported by Github.",
 			);
 		}
-		return githubInstance;
+		return deepseekInstance;
 	}
 
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
-		const github = this.createProvider();
-		const githubInstance = github.transcriptionModel?.(model.name);
-		if (!githubInstance) {
+	): Promise<TranscriptionModelV2> {
+		const deepseek = this.createProvider();
+		const deepseekInstance = deepseek.transcriptionModel?.(model.name);
+		if (!deepseekInstance) {
 			throw new EvogenNotImplementedError(
 				"TTS models are not supported by Github.",
 			);
 		}
-		return githubInstance;
+		return deepseekInstance;
 	}
 
 	async checkStatus(

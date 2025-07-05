@@ -3,12 +3,12 @@ import {
 	createAnthropic,
 } from "@ai-sdk/anthropic";
 import type {
-	EmbeddingModelV1,
-	ImageModelV1,
-	LanguageModelV1,
-	ProviderV1,
-	SpeechModelV1,
-	TranscriptionModelV1,
+	EmbeddingModelV2,
+	ImageModelV2,
+	LanguageModelV2,
+	ProviderV2,
+	SpeechModelV2,
+	TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -38,7 +38,7 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	type: ProviderType = "Anthropic";
 	getModelsLink = "https://api.anthropic.ai/v1/models";
 
-	createProvider(): ProviderV1 {
+	createProvider(): ProviderV2 {
 		return createAnthropic(this.config);
 	}
 
@@ -54,7 +54,7 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	async _chatModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const anthropic = this.createProvider();
 		const anthropicInstance = anthropic.languageModel(model.name);
 		return anthropicInstance;
@@ -63,7 +63,7 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	async _completionModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<LanguageModelV1> {
+	): Promise<LanguageModelV2> {
 		const anthropic = this.createProvider();
 		const anthropicInstance = anthropic.languageModel(model.name);
 		return anthropicInstance;
@@ -72,22 +72,16 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	async _imageModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<ImageModelV1> {
+	): Promise<ImageModelV2> {
 		const anthropic = this.createProvider();
-		const anthropicInstance = anthropic.imageModel?.(model.name);
-		if (!anthropicInstance) {
-			throw new EvogenNotImplementedError(
-				"Image models are not supported.",
-			);
-		}
-
+		const anthropicInstance = anthropic.imageModel(model.name);
 		return anthropicInstance;
 	}
 
 	async _embeddingModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<EmbeddingModelV1<string>> {
+	): Promise<EmbeddingModelV2<string>> {
 		const anthropic = this.createProvider();
 		const anthropicInstance = anthropic.textEmbeddingModel(model.name);
 		return anthropicInstance;
@@ -96,7 +90,7 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	async _speachToTextModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<SpeechModelV1> {
+	): Promise<SpeechModelV2> {
 		const anthropic = this.createProvider();
 		const anthropicInstance = anthropic.speechModel?.(model.name);
 		if (!anthropicInstance) {
@@ -110,7 +104,7 @@ export class AnthropicProvider extends BaseEvogenProvider<AnthropicProviderSetti
 	async _textToSpeachModel(
 		model: ModelInfo,
 		metadata?: Record<string, any>,
-	): Promise<TranscriptionModelV1> {
+	): Promise<TranscriptionModelV2> {
 		const anthropic = this.createProvider();
 		const anthropicInstance = anthropic.transcriptionModel?.(model.name);
 		if (!anthropicInstance) {

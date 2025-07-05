@@ -1,11 +1,11 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type {
-  EmbeddingModelV1,
-  ImageModelV1,
-  LanguageModelV1,
-  ProviderV1,
-  SpeechModelV1,
-  TranscriptionModelV1,
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import {
@@ -137,11 +137,11 @@ interface OllamaConfig {
 export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   type: ProviderType = "Ollama";
 
-  createProvider(): ProviderV1 {
+  createProvider(): ProviderV2 {
     return createOpenAICompatible({
       name: this.name,
       apiKey: "",
-      baseURL: `${this.getBaseUrl()}/v1`,
+      baseURL: this.getBaseUrl(),
     });
   }
 
@@ -194,11 +194,11 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _chatModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const ollama = this.createProvider();
     const ollamaInstance = ollama.languageModel(
       model.name
-    ) as LanguageModelV1 & { config: any };
+    ) as LanguageModelV2 & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -208,11 +208,11 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const ollama = this.createProvider();
     const ollamaInstance = ollama.languageModel(
       model.name
-    ) as LanguageModelV1 & { config: any };
+    ) as LanguageModelV2 & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -222,7 +222,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _imageModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<ImageModelV1> {
+  ): Promise<ImageModelV2> {
     throw new EvogenNotImplementedError(
       "Audio models are not supported by Ollama."
     );
@@ -231,11 +231,11 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV1<string>> {
+  ): Promise<EmbeddingModelV2<string>> {
     const ollama = this.createProvider();
     const ollamaInstance = ollama.textEmbeddingModel(
       model.name
-    ) as EmbeddingModelV1<string> & { config: any };
+    ) as EmbeddingModelV2<string> & { config: any };
 
     ollamaInstance.config.baseURL = `${this.getBaseUrl()}/api`;
 
@@ -245,7 +245,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _speachToTextModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<SpeechModelV1> {
+  ): Promise<SpeechModelV2> {
     throw new EvogenNotImplementedError(
       "Speach models are not supported by Ollama."
     );
@@ -254,7 +254,7 @@ export class OllamaProvider extends BaseEvogenProvider<OllamaConfig> {
   async _textToSpeachModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<TranscriptionModelV1> {
+  ): Promise<TranscriptionModelV2> {
     throw new EvogenNotImplementedError(
       "TTS models are not supported by Ollama."
     );

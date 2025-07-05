@@ -1,10 +1,10 @@
 import type {
-  EmbeddingModelV1,
-  ImageModelV1,
-  LanguageModelV1,
-  ProviderV1,
-  SpeechModelV1,
-  TranscriptionModelV1,
+  EmbeddingModelV2,
+  ImageModelV2,
+  LanguageModelV2,
+  ProviderV2,
+  SpeechModelV2,
+  TranscriptionModelV2,
 } from "@ai-sdk/provider";
 
 import type { BaseEvogenStorage } from "./base-storage";
@@ -39,16 +39,16 @@ export abstract class BaseEvogenProvider<T> {
     });
   }
 
-  abstract createProvider(): ProviderV1;
+  abstract createProvider(): ProviderV2;
 
   abstract _chatModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1>;
+  ): Promise<LanguageModelV2>;
   async chatModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const model = await this.validateModelExists(modelName, "chat", metadata);
     return this._chatModel(model, metadata);
   }
@@ -56,11 +56,11 @@ export abstract class BaseEvogenProvider<T> {
   abstract _completionModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1>;
+  ): Promise<LanguageModelV2>;
   async completionModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<LanguageModelV1> {
+  ): Promise<LanguageModelV2> {
     const model = await this.validateModelExists(
       modelName,
       "completion",
@@ -72,11 +72,11 @@ export abstract class BaseEvogenProvider<T> {
   abstract _imageModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<ImageModelV1>;
+  ): Promise<ImageModelV2>;
   async imageModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<ImageModelV1> {
+  ): Promise<ImageModelV2> {
     const model = await this.validateModelExists(
       modelName,
       "image-generation",
@@ -88,11 +88,11 @@ export abstract class BaseEvogenProvider<T> {
   abstract _embeddingModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV1<any>>;
+  ): Promise<EmbeddingModelV2<any>>;
   async embeddingModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<EmbeddingModelV1<any>> {
+  ): Promise<EmbeddingModelV2<any>> {
     const model = await this.validateModelExists(
       modelName,
       "embedding",
@@ -104,11 +104,11 @@ export abstract class BaseEvogenProvider<T> {
   abstract _speachToTextModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<SpeechModelV1>;
+  ): Promise<SpeechModelV2>;
   async speachToTextModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<SpeechModelV1> {
+  ): Promise<SpeechModelV2> {
     const model = await this.validateModelExists(
       modelName,
       "speech-to-text",
@@ -120,11 +120,11 @@ export abstract class BaseEvogenProvider<T> {
   abstract _textToSpeachModel(
     model: ModelInfo,
     metadata?: Record<string, any>
-  ): Promise<TranscriptionModelV1>;
+  ): Promise<TranscriptionModelV2>;
   async textToSpeachModel(
     modelName: string,
     metadata?: Record<string, any>
-  ): Promise<TranscriptionModelV1> {
+  ): Promise<TranscriptionModelV2> {
     const model = await this.validateModelExists(
       modelName,
       "text-to-speach",
