@@ -1,6 +1,6 @@
 {
 	"name": "@fluttensor-ai/evogen",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
 	"private": false,
 	"keywords": [
@@ -20,6 +20,11 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.mjs",
 			"require": "./dist/index.js"
+		},
+		"./static": {
+			"types": "./dist/static/index.d.ts",
+			"import": "./dist/static/index.mjs",
+			"require": "./dist/static/index.js"
 		}
 	},
 	"files": [
@@ -28,15 +33,13 @@
 	"scripts": {
 		"build": "pnpm clean && tsup",
 		"build:watch": "pnpm clean && tsup --watch",
+		"publish": "pnpm build && npm publish --access public",
 		"gen:models": "ts-node scripts/fetch-models.ts",
 		"clean": "rimraf dist ",
 		"lint": "biome check --write",
 		"type-check": "tsc --build",
-		"prettier-check": "prettier --check \"./**/*.ts*\"",
 		"test": "vitest",
 		"test:update": "pnpm test:node -u",
-		"test:watch": "vitest --config vitest.node.config.js",
-		"test:edge": "vitest --config vitest.edge.config.js --run",
 		"test:node": "vitest --config vitest.node.config.js --run"
 	},
 	"repository": {
@@ -80,7 +83,6 @@
 		"cross-env": "^7.0.3",
 		"dotenv": "^16.4.7",
 		"rimraf": "^6.0.1",
-		"ts-node": "^10.9.2",
 		"tsup": "^8.4.0",
 		"typescript": "^5.7.2",
 		"vitest": "^2.1.8"
