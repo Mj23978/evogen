@@ -1,6 +1,6 @@
 {
 	"name": "@fluttensor-ai/evogen",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"description": "A gateway for AI models using the Vercel AI SDK, allowing users to choose from various AI providers.",
 	"private": false,
 	"keywords": [
@@ -22,9 +22,9 @@
 			"require": "./dist/index.js"
 		},
 		"./static": {
-			"types": "./dist/static/index.d.ts",
-			"import": "./dist/static/index.mjs",
-			"require": "./dist/static/index.js"
+			"types": "./dist/static.d.ts",
+			"import": "./dist/static.mjs",
+			"require": "./dist/static.js"
 		}
 	},
 	"files": [
