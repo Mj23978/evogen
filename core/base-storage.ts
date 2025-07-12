@@ -73,117 +73,68 @@ export abstract class BaseEvogenStorage<T extends {}> {
   public abstract getApiKeys(
     data: EvogenStorageGetApiKeysParams<T>
   ): Promise<Record<string, string>>;
-  public getApiKeysSync?(
-    data: EvogenStorageGetApiKeysParams<T>
-  ): Record<string, string>;
-
+ 
   public abstract deleteApiKey(
     data: EvogenStorageDeleteApiKeyParams<T>
   ): Promise<void>;
-  public deleteApiKeySync?(data: EvogenStorageDeleteApiKeyParams<T>): void;
-
+ 
   public abstract getApiKey(
     data: EvogenStorageGetApiKeyParams<T>
   ): Promise<string>;
-  public getApiKeySync?(data: EvogenStorageGetApiKeyParams<T>): string;
-
+ 
   public abstract addApiKey(
     data: EvogenStorageAddApiKeyParams<T>
   ): Promise<void>;
-  public addApiKeySync?(data: EvogenStorageAddApiKeyParams<T>): void;
-
+ 
   public abstract editApiKey(
     data: EvogenStorageEditApiKeyParams<T>
   ): Promise<void>;
-  public editApiKeySync?(data: EvogenStorageEditApiKeyParams<T>): void;
-
-  // --- Provider Management ---
-
-  /**
-   * Asynchronously retrieves all provider configurations.
-   * This method was previously named `getProviders`.
-   */
+ 
   public abstract getProviders(
     data: EvogenStorageGetProvidersParams<T>
   ): Promise<ProviderInfo[]>;
-  /**
-   * Synchronously retrieves all provider configurations.
-   * Optional: Implement only if the storage strategy supports synchronous operations.
-   */
-  public getProvidersSync?(
-    data: EvogenStorageGetProvidersParams<T>
-  ): ProviderInfo[];
-
+ 
   public abstract addProvider(
     data: EvogenStorageAddProviderParams<T>
   ): Promise<void>;
-  public addProviderSync?(data: EvogenStorageAddProviderParams<T>): void;
-
+ 
   public abstract getProvider(
     data: EvogenStorageGetProviderParams<T>
   ): Promise<ProviderInfo>;
-  public getProviderSync?(
-    data: EvogenStorageGetProviderParams<T>
-  ): ProviderInfo;
-
+ 
   public abstract editProvider(
     data: EvogenStorageEditProviderParams<T>
   ): Promise<void>;
-  public editProviderSync?(data: EvogenStorageEditProviderParams<T>): void;
-
+ 
   public abstract deleteProvider(
     data: EvogenStorageDeleteProviderParams<T>
   ): Promise<void>;
-  public deleteProviderSync?(data: EvogenStorageDeleteProviderParams<T>): void;
-
-  // --- Model Management ---
-
+ 
   public abstract getProviderModels(
     data: EvogenStorageGetProviderModelsParams<T>
   ): Promise<ModelInfo[]>;
-  public getProviderModelsSync?(
-    data: EvogenStorageGetProviderModelsParams<T>
-  ): ModelInfo[];
-
+ 
   public abstract getProviderModel(
     data: EvogenStorageGetProviderModelParams<T>
   ): Promise<ModelInfo>;
-  public getProviderModelSync?(
-    data: EvogenStorageGetProviderModelParams<T>
-  ): ModelInfo;
-
+ 
   public abstract addProviderModel(
     data: EvogenStorageAddProviderModelParams<T>
   ): Promise<void>;
-  public addProviderModelSync?(
-    data: EvogenStorageAddProviderModelParams<T>
-  ): void;
-
+ 
   public abstract addProviderModels(
     data: EvogenStorageAddProviderModelsParams<T>
   ): Promise<void>;
-  public addProviderModelsSync?(
-    data: EvogenStorageAddProviderModelsParams<T>
-  ): void;
-
+ 
   public abstract editProviderModel(
     data: EvogenStorageEditProviderModelParams<T>
   ): Promise<void>;
-  public editProviderModelSync?(
-    data: EvogenStorageEditProviderModelParams<T>
-  ): void;
-
+ 
   public abstract deleteProviderModel(
     data: EvogenStorageDeleteProviderModelParams<T>
   ): Promise<void>;
-  public deleteProviderModelSync?(
-    data: EvogenStorageDeleteProviderModelParams<T>
-  ): void;
-
+ 
   public abstract deleteProviderModels(
     data: EvogenStorageDeleteProviderModelsParams<T>
   ): Promise<void>;
-  public deleteProviderModelsSync?(
-    data: EvogenStorageDeleteProviderModelsParams<T>
-  ): void;
-}
+ }

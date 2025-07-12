@@ -61,8 +61,6 @@ export class EvoGen {
     throw new EvogenError(`No storage strategy found for '${strategy}'`);
   }
 
-  // --- ASYNC METHODS ---
-
   async getProviderApiKey(
     info: ProviderInfo,
     strategy: string,
@@ -152,127 +150,6 @@ export class EvoGen {
 
     return this._modelList;
   }
-
-  getProviderApiKeySync(
-    info: ProviderInfo,
-    strategy: string,
-    metadata?: Record<string, any>
-  ): string {
-    if (info.config?.apiKey) {
-      return info.config.apiKey;
-    }
-    if (info.keys.apiKeyEnv) {
-      const storage = this.getStorage(strategy);
-      if (!storage.getApiKeySync) {
-        throw new EvogenError(
-          `Storage strategy '${strategy}' does not support synchronous operations.`
-        );
-      }
-      return storage.getApiKeySync({
-        name: info.keys.apiKeyEnv,
-        ...metadata,
-      });
-    }
-    throw new EvogenError("No API key found for the given provider");
-  }
-
-  getProviderConfigsSync(
-    name: string,
-    strategy: string,
-    metadata?: Record<string, any>
-  ): Record<string, any> {
-    const storage = this.getStorage(strategy);
-    if (!storage.getProviderSync) {
-      throw new EvogenError(
-        `Storage strategy '${strategy}' does not support synchronous operations.`
-      );
-    }
-    const provider = storage.getProviderSync({
-      providerName: name,
-      ...metadata,
-    });
-    return { ...provider.keys, ...provider.metadata };
-  }
-
-  getProviderSync(
-    name: string,
-    strategy: string,
-    config?: Record<string, any>,
-    metadata?: Record<string, any>
-  ): BaseEvogenProvider<any> {
-    const storage = this.getStorage(strategy);
-    if (!storage.getProviderSync) {
-      throw new EvogenError(
-        `Storage strategy '${strategy}' does not support synchronous operations.`
-      );
-    }
-    const providerInfo = storage.getProviderSync({
-      providerName: name,
-      ...metadata,
-    });
-    providerInfo.config = {
-      ...providerInfo.keys,
-      ...providerInfo.metadata,
-      ...providerInfo.config,
-      ...config,
-    };
-    return this.getProviderByType(providerInfo, storage);
-  }
-
-  /**
-   * Synchronously fetches model lists from all available providers.
-   * Requires a storage strategy that supports synchronous operations.
-   * @param strategy The storage strategy to use.
-   * @param metadata Optional metadata for the storage strategy.
-   * @returns An array of ModelInfo objects.
-   */
-  getModelListSync(
-    strategy: string,
-    metadata?: Record<string, any>
-  ): ModelInfo[] {
-    const storage = this.getStorage(strategy);
-    if (
-      storage.getProvidersSync === undefined ||
-      storage.getProviderModelsSync === undefined
-    ) {
-      throw new EvogenError(
-        `Storage strategy '${strategy}' does not support synchronous 'getAllProvidersSync'.`
-      );
-    }
-    const providerInfos = storage.getProvidersSync({ ...metadata });
-
-    const modelLists = providerInfos.map((info) => {
-      try {
-        if (
-          storage.getProvidersSync === undefined ||
-          storage.getProviderModelsSync === undefined
-        ) {
-          throw new EvogenError(
-            `Storage strategy '${strategy}' does not support synchronous 'getAllProvidersSync'.`
-          );
-        }
-        const models = storage.getProviderModelsSync({
-          providerName: info.name,
-        });
-        return models;
-      } catch (err) {
-        console.error(
-          `Evogen: Error fetching models for provider ${info.name}:`,
-          err
-        );
-        return [];
-      }
-    });
-
-    const allModels = modelLists.flat();
-
-    allModels.sort((a, b) => a.name.localeCompare(b.name));
-    this._modelList = allModels;
-
-    return this._modelList;
-  }
-
-  // --- UTILITY METHODS ---
 
   /**
    * A pure function that returns a provider instance based on its type.

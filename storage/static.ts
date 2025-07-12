@@ -1,4 +1,3 @@
-import "dotenv";
 import type {
   EvogenStorageAddApiKeyParams,
   EvogenStorageAddProviderModelParams,
@@ -31,23 +30,26 @@ type CommonInput = {};
  * An in-memory storage strategy for EvoGen that is initialized from a
  * static list of providers and environment variables.
  *
- * This class implements both synchronous and asynchronous methods, making it
+ * This class implements both hronous and ahronous methods, making it
  * suitable for any use case. All operations are performed on in-memory data structures.
  */
 export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
   private providers: Map<string, ProviderInfo & { models: ModelInfo[] }>;
   private apiKeys: Record<string, string>;
 
-  constructor() {
+  constructor(parseApiKeys: boolean = false) {
     super();
     this.apiKeys = {};
     this.providers = new Map(
       staticProviders.map((provider) => [provider.name, provider])
     );
-    this._parseApiKeys();
+    if (parseApiKeys) {
+      this._parseApiKeys();
+    }
   }
 
   private _parseApiKeys(): void {
+    require("dotenv");
     for (const provider of this.providers.values()) {
       if (provider.keys?.apiKeyEnv) {
         const apiKey = process.env[provider.keys.apiKeyEnv];
@@ -64,23 +66,21 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     }
   }
 
-  // --- Synchronous Methods (Core Logic) ---
-
-  public getApiKeysSync(
+  public async getApiKeys(
     data: EvogenStorageGetApiKeysParams<CommonInput>
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
     return this.apiKeys;
   }
 
-  public deleteApiKeySync(
+  public async deleteApiKey(
     data: EvogenStorageDeleteApiKeyParams<CommonInput>
-  ): void {
+  ): Promise<void> {
     delete this.apiKeys[data.name];
   }
 
-  public getApiKeySync(
+  public async getApiKey(
     data: EvogenStorageGetApiKeyParams<CommonInput>
-  ): string {
+  ): Promise<string> {
     const apiKey = this.apiKeys[data.name];
     if (!apiKey) {
       throw new EvogenError(`API key for '${data.name}' not found.`);
@@ -88,34 +88,34 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     return apiKey;
   }
 
-  public addApiKeySync(data: EvogenStorageAddApiKeyParams<CommonInput>): void {
+  public async addApiKey(data: EvogenStorageAddApiKeyParams<CommonInput>): Promise<void> {
     this.apiKeys[data.name] = data.value;
   }
 
-  public editApiKeySync(
+  public async editApiKey(
     data: EvogenStorageEditApiKeyParams<CommonInput>
-  ): void {
+  ): Promise<void> {
     this.apiKeys[data.name] = data.value;
   }
 
-  public getProvidersSync(
+  public async getProviders(
     data: EvogenStorageGetProvidersParams<CommonInput>
-  ): ProviderInfo[] {
+  ): Promise<ProviderInfo[]> {
     return Array.from(this.providers.values());
   }
 
-  public addProviderSync(
+  public async addProvider(
     data: EvogenStorageAddProviderParams<CommonInput>
-  ): void {
+  ): Promise<void> {
     this.providers.set(data.newProviderInfo.name, {
       ...data.newProviderInfo,
       models: [],
     });
   }
 
-  public getProviderSync(
+  public async getProvider(
     data: EvogenStorageGetProviderParams<CommonInput>
-  ): ProviderInfo {
+  ): Promise<ProviderInfo> {
     const provider = this.providers.get(data.providerName);
     if (!provider) {
       throw new EvogenError(`Provider '${data.providerName}' not found`);
@@ -123,10 +123,10 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     return provider;
   }
 
-  public editProviderSync(
+  public async editProvider(
     data: EvogenStorageEditProviderParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync({
+  ): Promise<void> {
+    const provider = await this.getProvider({
       providerName: data.oldProviderName,
     }) as ProviderInfo & { models: ModelInfo[] };
     this.providers.delete(data.oldProviderName);
@@ -136,27 +136,27 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     });
   }
 
-  public deleteProviderSync(
+  public async deleteProvider(
     data: EvogenStorageDeleteProviderParams<CommonInput>
-  ): void {
+  ): Promise<void> {
     if (!this.providers.delete(data.providerName)) {
       throw new EvogenError(`Provider '${data.providerName}' not found`);
     }
   }
 
-  public getProviderModelsSync(
+  public async getProviderModels(
     data: EvogenStorageGetProviderModelsParams<CommonInput>
-  ): ModelInfo[] {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<ModelInfo[]> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     return provider.models;
   }
 
-  public getProviderModelSync(
+  public async getProviderModel(
     data: EvogenStorageGetProviderModelParams<CommonInput>
-  ): ModelInfo {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<ModelInfo> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     const model = provider.models.find(
@@ -170,28 +170,28 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     return model;
   }
 
-  public addProviderModelSync(
+  public async addProviderModel(
     data: EvogenStorageAddProviderModelParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<void> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     provider.models.push(data.modelInfo);
   }
 
-  public addProviderModelsSync(
+  public async addProviderModels(
     data: EvogenStorageAddProviderModelsParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<void> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     provider.models.push(...data.modelInfos);
   }
 
-  public editProviderModelSync(
+  public async editProviderModel(
     data: EvogenStorageEditProviderModelParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<void> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     const modelIndex = provider.models.findIndex(
@@ -205,10 +205,10 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     provider.models[modelIndex] = data.newModelInfo;
   }
 
-  public deleteProviderModelSync(
+  public async deleteProviderModel(
     data: EvogenStorageDeleteProviderModelParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
+  ): Promise<void> {
+    const provider = await this.getProvider(data) as ProviderInfo & {
       models: ModelInfo[];
     };
     const modelIndex = provider.models.findIndex(
@@ -222,116 +222,12 @@ export class StaticEvogenStorage extends BaseEvogenStorage<CommonInput> {
     provider.models.splice(modelIndex, 1);
   }
 
-  public deleteProviderModelsSync(
-    data: EvogenStorageDeleteProviderModelParams<CommonInput>
-  ): void {
-    const provider = this.getProviderSync(data) as ProviderInfo & {
-      models: ModelInfo[];
-    };
-    provider.models = [];
-  }
-
-  // --- Asynchronous Wrappers ---
-
-  public async getApiKeys(
-    data: EvogenStorageGetApiKeysParams<CommonInput>
-  ): Promise<Record<string, string>> {
-    return this.getApiKeysSync(data);
-  }
-
-  public async deleteApiKey(
-    data: EvogenStorageDeleteApiKeyParams<CommonInput>
-  ): Promise<void> {
-    return this.deleteApiKeySync(data);
-  }
-
-  public async getApiKey(
-    data: EvogenStorageGetApiKeyParams<CommonInput>
-  ): Promise<string> {
-    return this.getApiKeySync(data);
-  }
-
-  public async addApiKey(
-    data: EvogenStorageAddApiKeyParams<CommonInput>
-  ): Promise<void> {
-    return this.addApiKeySync(data);
-  }
-
-  public async editApiKey(
-    data: EvogenStorageEditApiKeyParams<CommonInput>
-  ): Promise<void> {
-    return this.editApiKeySync(data);
-  }
-
-  public async getProviders(
-    data: EvogenStorageGetProvidersParams<CommonInput>
-  ): Promise<ProviderInfo[]> {
-    return this.getProvidersSync(data);
-  }
-
-  public async addProvider(
-    data: EvogenStorageAddProviderParams<CommonInput>
-  ): Promise<void> {
-    return this.addProviderSync(data);
-  }
-
-  public async getProvider(
-    data: EvogenStorageGetProviderParams<CommonInput>
-  ): Promise<ProviderInfo> {
-    return this.getProviderSync(data);
-  }
-
-  public async editProvider(
-    data: EvogenStorageEditProviderParams<CommonInput>
-  ): Promise<void> {
-    return this.editProviderSync(data);
-  }
-
-  public async deleteProvider(
-    data: EvogenStorageDeleteProviderParams<CommonInput>
-  ): Promise<void> {
-    return this.deleteProviderSync(data);
-  }
-
-  public async getProviderModels(
-    data: EvogenStorageGetProviderModelsParams<CommonInput>
-  ): Promise<ModelInfo[]> {
-    return this.getProviderModelsSync(data);
-  }
-
-  public async getProviderModel(
-    data: EvogenStorageGetProviderModelParams<CommonInput>
-  ): Promise<ModelInfo> {
-    return this.getProviderModelSync(data);
-  }
-
-  public async addProviderModel(
-    data: EvogenStorageAddProviderModelParams<CommonInput>
-  ): Promise<void> {
-    return this.addProviderModelSync(data);
-  }
-
-  public async addProviderModels(
-    data: EvogenStorageAddProviderModelsParams<CommonInput>
-  ): Promise<void> {
-    return this.addProviderModelsSync(data);
-  }
-
-  public async editProviderModel(
-    data: EvogenStorageEditProviderModelParams<CommonInput>
-  ): Promise<void> {
-    return this.editProviderModelSync(data);
-  }
-
-  public async deleteProviderModel(
-    data: EvogenStorageDeleteProviderModelParams<CommonInput>
-  ): Promise<void> {
-    return this.deleteProviderModelSync(data);
-  }
-
   public async deleteProviderModels(
     data: EvogenStorageDeleteProviderModelParams<CommonInput>
   ): Promise<void> {
-    return this.deleteProviderModelsSync(data);
+    const provider = await this.getProvider(data) as ProviderInfo & {
+      models: ModelInfo[];
+    };
+    provider.models = [];
   }
 }
